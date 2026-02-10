@@ -1,7 +1,7 @@
 // ==========================================
 // CONFIGURAÇÕES DE VENDA (SaaS)
 // ==========================================
-const DIAS_TRIAL = 30; 
+const DIAS_TRIAL = 15; 
 const VALOR_MENSALIDADE = "69,90";
 const MEU_PIX = "(21) 98507-2328"; 
 
