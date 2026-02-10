@@ -53,7 +53,7 @@ function verificarAssinatura() {
     const diferencaTempo = hoje - dataCadastro;
     const diasUso = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
 
-    // Se o status for grátis e passou de 30 dias, bloqueia
+    // Se o status for grátis e passou de 15 dias, bloqueia
     if (usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL) {
         return false;
     }
@@ -86,7 +86,7 @@ function executarAcaoPrincipal() {
         };
         usuarios.push(novo);
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
-        alert("Turma cadastrada! 30 dias grátis liberados.");
+        alert("Turma cadastrada! 15 dias grátis liberados.");
         alternarTelaLogin();
     } else {
         const valid = usuarios.find(u => u.user === user && u.pass === pass);
@@ -355,7 +355,7 @@ async function gerarRelatorioPDF() {
     ]);
 
     doc.autoTable({ 
-        startY: 30, 
+        startY: 15, 
         head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], 
         body: body 
     });
