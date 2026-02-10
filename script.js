@@ -17,7 +17,6 @@ function atualizarVisualizacao() {
     const bloqueioAssinatura = document.getElementById('bloqueio-assinatura');
 
     if (usuarioLogado) {
-        // Se for o admin (você)
         if (usuarioLogado.status === "admin") {
             loginContainer.style.display = 'none';
             appContent.style.display = 'block';
@@ -26,7 +25,6 @@ function atualizarVisualizacao() {
             return;
         }
 
-        // Se for um usuário comum, verifica assinatura
         if (!verificarAssinatura()) {
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
@@ -65,7 +63,6 @@ function executarAcaoPrincipal() {
     
     if (!user || !pass) return alert("Preencha tudo!");
 
-    // LOGIN DO DONO
     if (user === "caio" && pass === "caio1010") {
         usuarioLogado = { user: "caio", status: "admin" };
         localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
@@ -99,7 +96,6 @@ function executarAcaoPrincipal() {
     }
 }
 
-// PAINEL ADMINISTRATIVO (ATUALIZADO COM BUSCA E LUCRO)
 function acessarPainelDono() {
     document.getElementById('painel-dono').style.display = 'block';
     renderizarUsuariosAdmin();
@@ -121,7 +117,6 @@ function renderizarUsuariosAdmin() {
     let lucroAcumulado = 0;
     lista.innerHTML = "";
 
-    // Calcula lucro e total de turmas
     usuarios.forEach(u => {
         if (u.status === 'pago') lucroAcumulado += VALOR_MENSALIDADE;
     });
@@ -158,7 +153,6 @@ function liberarAcesso(nomeUsuario) {
     const idx = usuarios.findIndex(u => u.user === nomeUsuario);
     if (idx !== -1) {
         usuarios[idx].status = "pago";
-        // Opcional: renovar data para contar 30 dias a partir do pagamento
         usuarios[idx].dataCriacao = new Date().toISOString(); 
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
         alert("ACESSO LIBERADO!");
@@ -317,14 +311,38 @@ function atualizarTabela() {
     });
 }
 
+// ==========================================
+// FUNÇÃO CORRIGIDA: AGORA TROCA A DATA AUTOMATICAMENTE
+// ==========================================
 function registrarPagamento(id) {
     const v = parseFloat(prompt("Valor do pagamento:"));
     if (isNaN(v) || v <= 0) return;
     
     const c = componentes.find(x => x.id === id);
-    c.valorPago += v;
-    salvar(); 
-    atualizarTabela();
+    if (c) {
+        // 1. Soma o valor pago
+        c.valorPago += v;
+
+        // 2. Lógica para pular o mês da data de vencimento
+        // Criamos o objeto Date a partir da string "YYYY-MM-DD" salva
+        let dataAtual = new Date(c.vencimento + 'T00:00:00');
+        
+        // Adicionamos 1 mês
+        dataAtual.setMonth(dataAtual.getMonth() + 1);
+        
+        // Formatamos de volta para o padrão YYYY-MM-DD (que o navegador entende)
+        const ano = dataAtual.getFullYear();
+        const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
+        const dia = String(dataAtual.getDate()).padStart(2, '0');
+        
+        c.vencimento = `${ano}-${mes}-${dia}`;
+
+        // 3. Salva no banco local e atualiza a visão do usuário
+        salvar(); 
+        atualizarTabela();
+
+        alert(`Pagamento de R$ ${v.toFixed(2)} registrado!\nPróximo vencimento: ${dia}/${mes}/${ano}`);
+    }
 }
 
 function cobrarWhatsApp(id, saldo, rateio) {
