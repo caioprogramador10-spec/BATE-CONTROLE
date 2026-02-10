@@ -4,7 +4,7 @@
     padding: 0; 
     box-sizing: border-box; 
     font-family: 'Segoe UI', Arial, sans-serif; 
-    -webkit-tap-highlight-color: transparent; /* Remove o brilho azul ao tocar no celular */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body { 
@@ -13,7 +13,8 @@ body {
     display: flex; 
     flex-direction: column; 
     align-items: center; 
-    overflow-x: hidden; /* Evita que a página balance para os lados */
+    overflow-x: hidden; /* Vital para não sobrar tela pro lado */
+    width: 100%;
 }
 
 /* --- LOGIN --- */
@@ -76,11 +77,12 @@ header {
 
 main { 
     width: 100%; 
-    max-width: 900px; 
+    max-width: 900px; /* Limite para PC */
     padding: 15px; 
+    box-sizing: border-box;
 }
 
-/* RESUMO FINANCEIRO - Responsivo */
+/* RESUMO FINANCEIRO */
 #resumo-financeiro { 
     display: grid; 
     grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
@@ -107,8 +109,6 @@ main {
     margin-bottom: 15px; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
-
-#form-container h3 { font-size: 1rem; margin-bottom: 12px; color: #333; }
 
 input, select { 
     width: 100%; 
@@ -146,18 +146,19 @@ button#btn-cadastrar {
 .f-atrasado { background: #ff4d4d !important; color: white; border: none !important; }
 .f-ok { background: #27ae60 !important; color: white; border: none !important; }
 
-/* TABELA E LISTA */
+/* TABELA E LISTA - O AJUSTE PRINCIPAL ESTÁ AQUI */
 #lista-section { 
     background: white; 
     border-radius: 15px; 
     padding: 5px; 
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-top: 10px;
+    width: 100%;
 }
 
 .overflow-x-auto {
     width: 100%;
-    overflow-x: auto;
+    overflow-x: auto; /* Permite deslizar a tabela se ela for grande */
     -webkit-overflow-scrolling: touch;
 }
 
@@ -165,7 +166,7 @@ table {
     width: 100%; 
     border-collapse: collapse; 
     font-size: 0.85rem; 
-    min-width: 550px; /* Garante que os dados não fiquem exprimidos no celular */
+    /* Removido o min-width fixo que quebrava o layout */
 }
 
 th { 
@@ -175,12 +176,14 @@ th {
     border-bottom: 2px solid #f0f0f0; 
     text-transform: uppercase;
     font-size: 0.7rem;
+    white-space: nowrap; /* Não deixa o título da tabela quebrar linha */
 }
 
 td { 
     padding: 12px 10px; 
     border-bottom: 1px solid #f8f8f8; 
     color: #333;
+    white-space: nowrap; /* Mantém os nomes em uma linha só */
 }
 
 /* STATUS E BADGES */
@@ -188,20 +191,19 @@ td {
 .bg-ok { background: #d4edda; color: #155724; }
 .bg-atrasado { background: #f8d7da; color: #721c24; }
 
-/* AJUSTES PARA TELAS PEQUENAS */
+/* AJUSTES PARA TELAS PEQUENAS (MOBILE) */
 @media (max-width: 600px) {
-    header { padding: 15px; }
-    header h1 { font-size: 1.3rem; }
+    body { padding: 0; }
+    main { padding: 10px; width: 100vw; }
+    
+    header { padding: 15px; border-radius: 0 0 15px 15px; }
+    header h1 { font-size: 1.2rem; }
     
     #resumo-financeiro { 
         grid-template-columns: 1fr 1fr; 
         gap: 8px;
     }
     
-    .card-resumo { padding: 12px 5px; }
-    .card-resumo h4 { font-size: 1rem; }
-    
-    main { padding: 10px; }
-    
-    #filtros button { font-size: 0.75rem; }
+    .card-resumo { padding: 10px 5px; }
+    .card-resumo h4 { font-size: 0.95rem; }
 }
