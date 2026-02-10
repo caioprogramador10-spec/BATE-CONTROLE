@@ -2,7 +2,7 @@
 // CONFIGURAÇÕES DE VENDA (SaaS)
 // ==========================================
 const DIAS_TRIAL = 15; 
-const VALOR_MENSALIDADE = "69,90";
+const VALOR_MENSALIDADE = 69.90; // Valor numérico para cálculos
 const MEU_PIX = "(21) 98507-2328"; 
 
 // ==========================================
@@ -26,7 +26,7 @@ function atualizarVisualizacao() {
             return;
         }
 
-        // Se for um usuário comum, verifica se pagou ou está no trial
+        // Se for um usuário comum, verifica assinatura
         if (!verificarAssinatura()) {
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
@@ -53,7 +53,6 @@ function verificarAssinatura() {
     const diferencaTempo = hoje - dataCadastro;
     const diasUso = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
 
-    // Se o status for grátis e passou de 15 dias, bloqueia
     if (usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL) {
         return false;
     }
@@ -66,7 +65,7 @@ function executarAcaoPrincipal() {
     
     if (!user || !pass) return alert("Preencha tudo!");
 
-    // LOGIN DO DONO (CAIO)
+    // LOGIN DO DONO
     if (user === "caio" && pass === "caio1010") {
         usuarioLogado = { user: "caio", status: "admin" };
         localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
@@ -86,7 +85,7 @@ function executarAcaoPrincipal() {
         };
         usuarios.push(novo);
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
-        alert("Turma cadastrada! 15 dias grátis liberados.");
+        alert(`Turma cadastrada! ${DIAS_TRIAL} dias grátis liberados.`);
         alternarTelaLogin();
     } else {
         const valid = usuarios.find(u => u.user === user && u.pass === pass);
@@ -100,7 +99,7 @@ function executarAcaoPrincipal() {
     }
 }
 
-// PAINEL ADMINISTRATIVO
+// PAINEL ADMINISTRATIVO (ATUALIZADO COM BUSCA E LUCRO)
 function acessarPainelDono() {
     document.getElementById('painel-dono').style.display = 'block';
     renderizarUsuariosAdmin();
@@ -114,21 +113,41 @@ function fecharPainelDono() {
 function renderizarUsuariosAdmin() {
     const usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
     const lista = document.getElementById('lista-usuarios-admin');
+    const termoBusca = document.getElementById('busca-admin').value.toLowerCase();
+    
+    const displayTotal = document.getElementById('admin-total-turmas');
+    const displayLucro = document.getElementById('admin-lucro-total');
+    
+    let lucroAcumulado = 0;
     lista.innerHTML = "";
 
-    if (usuarios.length === 0) {
-        lista.innerHTML = "<p style='color:#888;'>Nenhuma turma cadastrada ainda.</p>";
+    // Calcula lucro e total de turmas
+    usuarios.forEach(u => {
+        if (u.status === 'pago') lucroAcumulado += VALOR_MENSALIDADE;
+    });
+
+    if(displayTotal) displayTotal.innerText = usuarios.length;
+    if(displayLucro) displayLucro.innerText = `R$ ${lucroAcumulado.toFixed(2)}`;
+
+    const filtrados = usuarios.filter(u => u.user.toLowerCase().includes(termoBusca));
+
+    if (filtrados.length === 0) {
+        lista.innerHTML = "<p style='color:#888; text-align:center;'>Nenhuma turma encontrada.</p>";
         return;
     }
 
-    usuarios.forEach((u) => {
+    filtrados.forEach((u) => {
         const data = new Date(u.dataCriacao).toLocaleDateString('pt-BR');
+        const corStatus = u.status === 'pago' ? '#27ae60' : '#e67e22';
+        
         lista.innerHTML += `
-            <div style="background:#222; padding:15px; margin-bottom:10px; border-radius:10px; border-left: 5px solid ${u.status === 'pago' ? '#27ae60' : '#e67e22'}">
-                <p style="margin:0;"><strong>Turma:</strong> ${u.user}</p>
-                <p style="margin:5px 0; font-size:0.8rem; color:#aaa;">Desde: ${data} | Status: ${u.status.toUpperCase()}</p>
-                <button onclick="liberarAcesso('${u.user}')" style="background:#27ae60; color:white; padding:8px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; width:100%; font-weight:bold;">Confirmar Pagamento</button>
-                <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:#444; color:white; padding:8px; border:none; border-radius:5px; cursor:pointer; margin-top:5px; width:100%;">Excluir Turma</button>
+            <div style="background:#222; padding:15px; margin-bottom:12px; border-radius:12px; border-left: 6px solid ${corStatus}">
+                <p style="margin:0; font-size:1rem;"><strong>Turma:</strong> ${u.user}</p>
+                <p style="margin:5px 0; font-size:0.75rem; color:#aaa;">Desde: ${data} | Status: ${u.status.toUpperCase()}</p>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button onclick="liberarAcesso('${u.user}')" style="background:#27ae60; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer; flex:3; font-weight:bold;">Confirmar Pago</button>
+                    <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:#444; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer; flex:1;">❌</button>
+                </div>
             </div>
         `;
     });
@@ -139,15 +158,16 @@ function liberarAcesso(nomeUsuario) {
     const idx = usuarios.findIndex(u => u.user === nomeUsuario);
     if (idx !== -1) {
         usuarios[idx].status = "pago";
+        // Opcional: renovar data para contar 30 dias a partir do pagamento
         usuarios[idx].dataCriacao = new Date().toISOString(); 
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
-        alert("ACESSO LIBERADO! A turma " + nomeUsuario + " agora está como PAGO.");
+        alert("ACESSO LIBERADO!");
         renderizarUsuariosAdmin();
     }
 }
 
 function deletarUsuarioAdmin(nomeUsuario) {
-    if(confirm(`ATENÇÃO: Deseja apagar a turma ${nomeUsuario}?`)) {
+    if(confirm(`Apagar turma ${nomeUsuario}?`)) {
         let usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
         usuarios = usuarios.filter(u => u.user !== nomeUsuario);
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
@@ -257,7 +277,9 @@ function atualizarTabela() {
     carregarDadosUsuario();
     const rateio = atualizarResumo();
     const corpo = document.getElementById('corpoTabela');
-    const busca = document.getElementById('buscaNome').value.toLowerCase();
+    const campoBusca = document.getElementById('buscaNome');
+    const busca = campoBusca ? campoBusca.value.toLowerCase() : "";
+    
     corpo.innerHTML = '';
 
     componentes.forEach(c => {
@@ -301,12 +323,6 @@ function registrarPagamento(id) {
     
     const c = componentes.find(x => x.id === id);
     c.valorPago += v;
-
-    let dataVenc = new Date(c.vencimento + 'T00:00:00');
-    dataVenc.setMonth(dataVenc.getMonth() + 1);
-    
-    c.vencimento = dataVenc.toISOString().split('T')[0];
-
     salvar(); 
     atualizarTabela();
 }
@@ -351,15 +367,15 @@ async function gerarRelatorioPDF() {
         (c.valorTotal+rateio).toFixed(2), 
         c.valorPago.toFixed(2), 
         (c.valorTotal+rateio-c.valorPago).toFixed(2), 
-        c.vencimento
+        c.vencimento.split('-').reverse().join('/')
     ]);
 
     doc.autoTable({ 
-        startY: 15, 
+        startY: 25, 
         head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], 
         body: body 
     });
-    doc.save(`relatorio.pdf`);
+    doc.save(`relatorio_${usuarioLogado.user}.pdf`);
 }
 
 window.onload = atualizarVisualizacao;
