@@ -1,9 +1,15 @@
 // ==========================================
 // CONFIGURAÇÕES DO SUPABASE (Troque pelos seus dados!)
 // ==========================================
-const SUPABASE_URL = 'SUA_URL_AQUI';
-const SUPABASE_KEY = 'SUA_CHAVE_ANON_AQUI';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL = 'https://ovrkpnusgulvkjtnhcsr.supabase.co'; // <--- Coloque sua URL aqui
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92cmtwbnVzZ3VsdmtqdG5oY3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODI2NTEsImV4cCI6MjA4NjE1ODY1MX0.EF4opjkiJfSi4Nr3M4DDTvhZnM8itILurG_OTLw_q-I'; // <--- Coloque sua Chave aqui
+
+// Correção do erro de duplicidade:
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+// Para manter a compatibilidade com o resto do seu código que usa "supabase.from":
+const supabaseInstance = supabaseClient; 
+// Substituímos o uso global para evitar o erro "Identifier already declared"
+// No resto do código, usaremos a instância criada.
 
 // ==========================================
 // CONFIGURAÇÕES DE VENDA (SaaS)
@@ -83,7 +89,6 @@ function verificarAssinatura() {
     return !(usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL);
 }
 
-// LOGIN AGORA CONSULTA O SUPABASE PARA VER SE A TURMA EXISTE NA NUVEM
 async function executarAcaoPrincipal() {
     const user = document.getElementById('usuario').value.trim().toLowerCase();
     const pass = document.getElementById('senha').value.trim();
@@ -97,8 +102,7 @@ async function executarAcaoPrincipal() {
         return;
     }
 
-    // Tenta buscar usuários do Supabase
-    let { data: usuarios, error } = await supabase.from('bateControleUsers').select('*');
+    let { data: usuarios, error } = await supabaseInstance.from('bateControleUsers').select('*');
     if (error) usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
 
     if (modoCadastro) {
@@ -110,8 +114,7 @@ async function executarAcaoPrincipal() {
             status: "gratis" 
         };
         
-        // Salva no Supabase e no LocalStorage
-        await supabase.from('bateControleUsers').insert([novo]);
+        await supabaseInstance.from('bateControleUsers').insert([novo]);
         usuarios.push(novo);
         localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
         
@@ -140,7 +143,7 @@ function fecharPainelDono() {
 }
 
 async function renderizarUsuariosAdmin() {
-    let { data: usuarios } = await supabase.from('bateControleUsers').select('*');
+    let { data: usuarios } = await supabaseInstance.from('bateControleUsers').select('*');
     if(!usuarios) usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
     
     const lista = document.getElementById('lista-usuarios-admin');
@@ -184,7 +187,7 @@ async function renderizarUsuariosAdmin() {
 }
 
 async function liberarAcesso(nomeUsuario) {
-    const { error } = await supabase.from('bateControleUsers').update({ status: 'pago', dataCriacao: new Date().toISOString() }).eq('user', nomeUsuario);
+    const { error } = await supabaseInstance.from('bateControleUsers').update({ status: 'pago', dataCriacao: new Date().toISOString() }).eq('user', nomeUsuario);
     if (!error) {
         alert("ACESSO LIBERADO NA NUVEM!");
         renderizarUsuariosAdmin();
@@ -193,7 +196,7 @@ async function liberarAcesso(nomeUsuario) {
 
 async function deletarUsuarioAdmin(nomeUsuario) {
     if(confirm(`Apagar turma ${nomeUsuario}?`)) {
-        await supabase.from('bateControleUsers').delete().eq('user', nomeUsuario);
+        await supabaseInstance.from('bateControleUsers').delete().eq('user', nomeUsuario);
         renderizarUsuariosAdmin();
     }
 }
@@ -234,9 +237,8 @@ let filtroAtual = 'todos';
 async function carregarDadosUsuario() {
     if(!usuarioLogado) return;
     
-    // Tenta carregar do Supabase primeiro
-    let { data: compCloud } = await supabase.from('componentes').select('*').eq('turma_id', usuarioLogado.user);
-    let { data: extraCloud } = await supabase.from('extras').select('*').eq('turma_id', usuarioLogado.user);
+    let { data: compCloud } = await supabaseInstance.from('componentes').select('*').eq('turma_id', usuarioLogado.user);
+    let { data: extraCloud } = await supabaseInstance.from('extras').select('*').eq('turma_id', usuarioLogado.user);
 
     if (compCloud) componentes = compCloud;
     else componentes = JSON.parse(localStorage.getItem(`data_${usuarioLogado.user}`)) || [];
@@ -248,8 +250,8 @@ async function carregarDadosUsuario() {
 async function salvarComponenteNuvem(c) {
     if(!usuarioLogado) return;
     localStorage.setItem(`data_${usuarioLogado.user}`, JSON.stringify(componentes));
-    await supabase.from('componentes').upsert({
-        id: c.id_db || undefined, // Supabase gera UUID se for nulo
+    await supabaseInstance.from('componentes').upsert({
+        id: c.id || undefined, 
         turma_id: usuarioLogado.user,
         nome: c.nome,
         valor_total: c.valorTotal,
@@ -266,7 +268,7 @@ async function adicionarCustoExtra() {
         const novoExtra = { turma_id: usuarioLogado.user, descricao: desc, valor: valor };
         custosExtras.push(novoExtra);
         
-        await supabase.from('extras').insert([novoExtra]);
+        await supabaseInstance.from('extras').insert([novoExtra]);
         localStorage.setItem(`extras_${usuarioLogado.user}`, JSON.stringify(custosExtras));
         
         document.getElementById('descExtra').value = '';
@@ -331,7 +333,6 @@ async function atualizarTabela() {
     corpo.innerHTML = '';
 
     componentes.forEach(c => {
-        // Ajuste para ler tanto do LocalStorage quanto do Supabase (nomes de colunas diferentes)
         const cNome = c.nome;
         const cTotal = (c.valorTotal || c.valor_total);
         const cPago = (c.valorPago || c.valor_pago);
@@ -377,11 +378,8 @@ async function registrarPagamento(id) {
     
     const c = componentes.find(x => x.id == id);
     if (c) {
-        if(c.valorPago !== undefined) c.valorPago += v; else c.valor_pago += v;
-        
-        // Salva no Supabase
-        await supabase.from('componentes').update({ valor_pago: (c.valorPago || c.valor_pago) }).eq('id', id);
-        
+        const novoPago = (c.valorPago || c.valor_pago) + v;
+        await supabaseInstance.from('componentes').update({ valor_pago: novoPago }).eq('id', id);
         await atualizarTabela();
         alert(`Pagamento registrado na nuvem!`);
     }
@@ -395,7 +393,7 @@ function cobrarWhatsApp(id, saldo, rateio) {
 
 async function removerComponente(id) { 
     if(confirm("Remover?")) { 
-        await supabase.from('componentes').delete().eq('id', id);
+        await supabaseInstance.from('componentes').delete().eq('id', id);
         await atualizarTabela(); 
     } 
 }
@@ -407,8 +405,8 @@ function filtrar(t) {
 
 async function zerarTudo() { 
     if(confirm("Zerar temporada? Isso apagará os dados na nuvem!")) { 
-        await supabase.from('componentes').delete().eq('turma_id', usuarioLogado.user);
-        await supabase.from('extras').delete().eq('turma_id', usuarioLogado.user);
+        await supabaseInstance.from('componentes').delete().eq('turma_id', usuarioLogado.user);
+        await supabaseInstance.from('extras').delete().eq('turma_id', usuarioLogado.user);
         await atualizarTabela(); 
     } 
 }
