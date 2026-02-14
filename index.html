@@ -6,6 +6,8 @@
     <title>Bate-Controle 🤡</title>
     <link rel="stylesheet" href="style.css">
     
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
@@ -80,6 +82,20 @@
         }
         .admin-card h3 { margin: 5px 0 0 0; font-size: 1.2rem; }
         .admin-card span { font-size: 0.7rem; text-transform: uppercase; color: #888; }
+        
+        /* Botão WhatsApp no Bloqueio */
+        .btn-avisar-pagamento {
+            background: #25d366;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            width: 100%;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -140,6 +156,9 @@
                 <p style="font-size: 0.8rem; color: #666;">Chave Pix (Celular):</p>
                 <p id="pix-texto" style="font-size: 1.2rem; font-weight: bold; color: #27ae60;">(21) 98507-2328</p>
             </div>
+            
+            <button class="btn-avisar-pagamento" onclick="avisarPagamento()">✅ JÁ FIZ O PIX! ME LIBERA</button>
+            
             <button onclick="fazerLogout()" style="background:none; border: 1px solid #555; color: #ccc; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Sair da Conta</button>
         </div>
     </div>
