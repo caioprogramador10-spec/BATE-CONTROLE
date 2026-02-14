@@ -2,8 +2,9 @@
 // CONFIGURAÇÕES DE VENDA (SaaS)
 // ==========================================
 const DIAS_TRIAL = 15; 
-const VALOR_MENSALIDADE = 69.90; // Valor numérico para cálculos
+const VALOR_MENSALIDADE = 69.90; 
 const MEU_PIX = "(21) 98507-2328"; 
+const WHATSAPP_DONO = "5521985072328"; // Formato para link
 
 // ==========================================
 // 1. SISTEMA DE LOGIN E ASSINATURA
@@ -28,6 +29,23 @@ function atualizarVisualizacao() {
         if (!verificarAssinatura()) {
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
+            
+            // CONTEÚDO DINÂMICO DO BLOQUEIO
+            bloqueioAssinatura.innerHTML = `
+                <div style="background:#1a1a1a; padding:30px; border-radius:20px; border:2px solid #e74c3c; text-align:center; max-width:400px; margin: 20px auto;">
+                    <h2 style="color:#e74c3c">Acesso Expirado! 🤡</h2>
+                    <p style="color:#ddd">O período de ${DIAS_TRIAL} dias de teste da turma <strong>${usuarioLogado.user.toUpperCase()}</strong> chegou ao fim.</p>
+                    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+                    <p style="font-size:1.1rem">Valor da Assinatura: <br><strong style="font-size:1.5rem; color:#27ae60">R$ ${VALOR_MENSALIDADE.toFixed(2)}</strong></p>
+                    <p style="background:#000; padding:10px; border-radius:8px; margin:15px 0; border:1px dashed #555;">
+                        Chave PIX: <br><strong>${MEU_PIX}</strong>
+                    </p>
+                    <button onclick="avisarPagamento()" style="background:#25d366; color:white; padding:15px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size:1rem; transition:0.3s;">
+                        ✅ JÁ FIZ O PIX! LIBERAR ACESSO
+                    </button>
+                    <button onclick="fazerLogout()" style="background:transparent; color:#888; border:none; margin-top:20px; cursor:pointer; text-decoration:underline;">Sair da conta</button>
+                </div>
+            `;
             bloqueioAssinatura.style.display = 'block'; 
             return;
         }
@@ -41,6 +59,12 @@ function atualizarVisualizacao() {
         appContent.style.display = 'none';
         bloqueioAssinatura.style.display = 'none';
     }
+}
+
+// FUNÇÃO PARA AVISAR O DONO DO APP
+function avisarPagamento() {
+    const msg = `Fala Caio! Sou o responsável pela turma *${usuarioLogado.user.toUpperCase()}* e acabei de fazer o PIX da mensalidade do Bate-Controle. 🤡%0A%0APode liberar meu acesso?`;
+    window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_DONO}&text=${msg}`);
 }
 
 function verificarAssinatura() {
@@ -311,36 +335,21 @@ function atualizarTabela() {
     });
 }
 
-// ==========================================
-// FUNÇÃO CORRIGIDA: AGORA TROCA A DATA AUTOMATICAMENTE
-// ==========================================
 function registrarPagamento(id) {
     const v = parseFloat(prompt("Valor do pagamento:"));
     if (isNaN(v) || v <= 0) return;
     
     const c = componentes.find(x => x.id === id);
     if (c) {
-        // 1. Soma o valor pago
         c.valorPago += v;
-
-        // 2. Lógica para pular o mês da data de vencimento
-        // Criamos o objeto Date a partir da string "YYYY-MM-DD" salva
         let dataAtual = new Date(c.vencimento + 'T00:00:00');
-        
-        // Adicionamos 1 mês
         dataAtual.setMonth(dataAtual.getMonth() + 1);
-        
-        // Formatamos de volta para o padrão YYYY-MM-DD (que o navegador entende)
         const ano = dataAtual.getFullYear();
         const mes = String(dataAtual.getMonth() + 1).padStart(2, '0');
         const dia = String(dataAtual.getDate()).padStart(2, '0');
-        
         c.vencimento = `${ano}-${mes}-${dia}`;
-
-        // 3. Salva no banco local e atualiza a visão do usuário
         salvar(); 
         atualizarTabela();
-
         alert(`Pagamento de R$ ${v.toFixed(2)} registrado!\nPróximo vencimento: ${dia}/${mes}/${ano}`);
     }
 }
@@ -379,7 +388,6 @@ async function gerarRelatorioPDF() {
     const doc = new jsPDF();
     const rateio = atualizarResumo();
     doc.text(`Financeiro: ${usuarioLogado.user}`, 14, 20);
-    
     const body = componentes.map(c => [
         c.nome, 
         (c.valorTotal+rateio).toFixed(2), 
@@ -387,7 +395,6 @@ async function gerarRelatorioPDF() {
         (c.valorTotal+rateio-c.valorPago).toFixed(2), 
         c.vencimento.split('-').reverse().join('/')
     ]);
-
     doc.autoTable({ 
         startY: 25, 
         head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], 
