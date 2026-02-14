@@ -1,235 +1,436 @@
-/* Configurações Gerais */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    font-family: 'Segoe UI', Arial, sans-serif; 
-    -webkit-tap-highlight-color: transparent;
-}
+// ==========================================
+// CONFIGURAÇÕES DO SUPABASE (Troque pelos seus dados!)
+// ==========================================
+const SUPABASE_URL = 'SUA_URL_AQUI';
+const SUPABASE_KEY = 'SUA_CHAVE_ANON_AQUI';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-body { 
-    background-color: #f0f2f5; 
-    min-height: 100vh; 
-    display: flex; 
-    flex-direction: column; 
-    align-items: center; 
-    overflow-x: hidden;
-    width: 100%;
-}
+// ==========================================
+// CONFIGURAÇÕES DE VENDA (SaaS)
+// ==========================================
+const DIAS_TRIAL = 15; 
+const VALOR_MENSALIDADE = 69.90; 
+const MEU_PIX = "(21) 98507-2328"; 
+const WHATSAPP_DONO = "5521985072328"; 
 
-/* --- LOGIN --- */
-#login-container {
-    width: 100%; 
-    height: 100vh; 
-    background: linear-gradient(135deg, #1a1a1a, #333);
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    z-index: 10000;
-}
+// ==========================================
+// 1. SISTEMA DE LOGIN E ASSINATURA
+// ==========================================
+let usuarioLogado = JSON.parse(localStorage.getItem('bateControleSessao')) || null;
+let modoCadastro = false;
 
-.login-box {
-    background: white; 
-    padding: 30px 20px; 
-    border-radius: 20px;
-    width: 90%; 
-    max-width: 400px; 
-    text-align: center; 
-    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
-}
+async function atualizarVisualizacao() {
+    const loginContainer = document.getElementById('login-container');
+    const appContent = document.getElementById('app-content');
+    const bloqueioAssinatura = document.getElementById('bloqueio-assinatura');
 
-.login-box h2 { color: #d35400; margin-bottom: 10px; }
+    if (usuarioLogado) {
+        if (usuarioLogado.status === "admin") {
+            loginContainer.style.display = 'none';
+            appContent.style.display = 'block';
+            bloqueioAssinatura.style.display = 'none';
+            await atualizarTabela();
+            return;
+        }
 
-.login-box input {
-    width: 100%; 
-    padding: 12px; 
-    margin-bottom: 15px; 
-    border: 2px solid #eee;
-    border-radius: 10px; 
-    font-size: 1rem; 
-    display: block;
-}
-
-#btn-login-entrar {
-    width: 100%; 
-    padding: 15px; 
-    background: #e67e22; 
-    color: white;
-    border: none; 
-    border-radius: 10px; 
-    font-weight: bold; 
-    cursor: pointer;
-    font-size: 1.1rem;
-}
-
-/* --- APP --- */
-header { 
-    background: linear-gradient(135deg, #e67e22, #d35400); 
-    color: white; 
-    width: 100%; 
-    padding: 20px; 
-    border-radius: 0 0 20px 20px; 
-    text-align: center;
-}
-
-main { 
-    width: 100%; 
-    max-width: 900px; 
-    padding: 15px; 
-    box-sizing: border-box;
-}
-
-/* RESUMO FINANCEIRO */
-#resumo-financeiro { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); 
-    gap: 10px; 
-    margin-bottom: 20px; 
-}
-
-.card-resumo { 
-    background: white; 
-    padding: 15px 10px; 
-    border-radius: 12px; 
-    text-align: center; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05); 
-}
-
-.card-resumo span { font-size: 0.8rem; color: #666; font-weight: bold; }
-.card-resumo h4 { font-size: 1.1rem; margin-top: 5px; }
-
-/* FORMULÁRIOS */
-#form-container { 
-    background: white; 
-    padding: 15px; 
-    border-radius: 15px; 
-    margin-bottom: 15px; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-}
-
-input, select { 
-    width: 100%; 
-    padding: 12px; 
-    border: 1px solid #ddd; 
-    border-radius: 8px; 
-    margin-bottom: 10px; 
-    font-size: 1rem;
-}
-
-button#btn-cadastrar {
-    width: 100%;
-    background: #e67e22;
-    color: white;
-    border: none;
-    padding: 15px;
-    border-radius: 10px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-/* FILTROS */
-#filtros { display: flex; gap: 5px; margin-top: 5px; flex-wrap: wrap; }
-#filtros button { 
-    flex: 1; 
-    padding: 10px 5px; 
-    border-radius: 8px; 
-    background: #fff; 
-    border: 1px solid #ddd;
-    cursor: pointer; 
-    font-size: 0.8rem;
-    font-weight: bold;
-}
-
-.f-atrasado { background: #ff4d4d !important; color: white; border: none !important; }
-.f-ok { background: #27ae60 !important; color: white; border: none !important; }
-
-/* TABELA E LISTA */
-#lista-section { 
-    background: white; 
-    border-radius: 15px; 
-    padding: 5px; 
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-    margin-top: 10px;
-    width: 100%;
-}
-
-.overflow-x-auto {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-table { 
-    width: 100%; 
-    border-collapse: collapse; 
-    font-size: 0.85rem; 
-}
-
-th { 
-    text-align: left; 
-    padding: 12px 10px; 
-    color: #888; 
-    border-bottom: 2px solid #f0f0f0; 
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    white-space: nowrap; 
-}
-
-td { 
-    padding: 12px 10px; 
-    border-bottom: 1px solid #f8f8f8; 
-    color: #333;
-    white-space: nowrap; 
-}
-
-/* STATUS E BADGES (SUPABASE INTEGRATION) */
-.bg-ok { background: #d4edda !important; color: #155724; border-left: 4px solid #27ae60; }
-.bg-atrasado { background: #f8d7da !important; color: #721c24; border-left: 4px solid #e74c3c; }
-
-/* BOTÃO DE WHATSAPP NO BLOQUEIO (EFEITO PULSAR) */
-.btn-avisar-pagamento {
-    background: #25d366 !important;
-    color: white !important;
-    padding: 18px !important;
-    border: none;
-    border-radius: 12px;
-    width: 100%;
-    font-weight: bold;
-    font-size: 1.1rem;
-    cursor: pointer;
-    margin-bottom: 15px;
-    box-shadow: 0 4px 15px rgba(37, 211, 102, 0.3);
-    animation: pulse-green 2s infinite;
-}
-
-@keyframes pulse-green {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
-    100% { transform: scale(1); }
-}
-
-/* FEEDBACK DE TOQUE */
-button:active {
-    transform: scale(0.96);
-    opacity: 0.9;
-}
-
-/* AJUSTES PARA TELAS PEQUENAS (MOBILE) */
-@media (max-width: 600px) {
-    body { padding: 0; }
-    main { padding: 10px; width: 100vw; }
-    
-    header { padding: 15px; border-radius: 0 0 15px 15px; }
-    header h1 { font-size: 1.2rem; }
-    
-    #resumo-financeiro { 
-        grid-template-columns: 1fr 1fr; 
-        gap: 8px;
+        if (!verificarAssinatura()) {
+            loginContainer.style.display = 'none';
+            appContent.style.display = 'none';
+            
+            bloqueioAssinatura.innerHTML = `
+                <div style="background:#1a1a1a; padding:30px; border-radius:20px; border:2px solid #e74c3c; text-align:center; max-width:400px; margin: 20px auto;">
+                    <h2 style="color:#e74c3c">Acesso Expirado! 🤡</h2>
+                    <p style="color:#ddd">O período de ${DIAS_TRIAL} dias de teste da turma <strong>${usuarioLogado.user.toUpperCase()}</strong> chegou ao fim.</p>
+                    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
+                    <p style="font-size:1.1rem">Valor da Assinatura: <br><strong style="font-size:1.5rem; color:#27ae60">R$ ${VALOR_MENSALIDADE.toFixed(2)}</strong></p>
+                    <p style="background:#000; padding:10px; border-radius:8px; margin:15px 0; border:1px dashed #555;">
+                        Chave PIX: <br><strong>${MEU_PIX}</strong>
+                    </p>
+                    <button onclick="avisarPagamento()" style="background:#25d366; color:white; padding:15px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size:1rem; transition:0.3s;">
+                        ✅ JÁ FIZ O PIX! LIBERAR ACESSO
+                    </button>
+                    <button onclick="fazerLogout()" style="background:transparent; color:#888; border:none; margin-top:20px; cursor:pointer; text-decoration:underline;">Sair da conta</button>
+                </div>
+            `;
+            bloqueioAssinatura.style.display = 'block'; 
+            return;
+        }
+        
+        loginContainer.style.display = 'none';
+        appContent.style.display = 'block';
+        bloqueioAssinatura.style.display = 'none';
+        await atualizarTabela();
+    } else {
+        loginContainer.style.display = 'flex';
+        appContent.style.display = 'none';
+        bloqueioAssinatura.style.display = 'none';
     }
-    
-    .card-resumo { padding: 10px 5px; }
-    .card-resumo h4 { font-size: 0.95rem; }
 }
+
+function avisarPagamento() {
+    const msg = `Fala Caio! Sou o responsável pela turma *${usuarioLogado.user.toUpperCase()}* e acabei de fazer o PIX da mensalidade do Bate-Controle. 🤡%0A%0APode liberar meu acesso?`;
+    window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_DONO}&text=${msg}`);
+}
+
+function verificarAssinatura() {
+    if (usuarioLogado.status === "admin" || usuarioLogado.status === "pago") return true; 
+    
+    const hoje = new Date();
+    const dataCadastro = new Date(usuarioLogado.dataCriacao);
+    const diferencaTempo = hoje - dataCadastro;
+    const diasUso = Math.floor(diferencaTempo / (1000 * 60 * 60 * 24));
+
+    return !(usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL);
+}
+
+// LOGIN AGORA CONSULTA O SUPABASE PARA VER SE A TURMA EXISTE NA NUVEM
+async function executarAcaoPrincipal() {
+    const user = document.getElementById('usuario').value.trim().toLowerCase();
+    const pass = document.getElementById('senha').value.trim();
+    
+    if (!user || !pass) return alert("Preencha tudo!");
+
+    if (user === "caio" && pass === "caio1010") {
+        usuarioLogado = { user: "caio", status: "admin" };
+        localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
+        acessarPainelDono();
+        return;
+    }
+
+    // Tenta buscar usuários do Supabase
+    let { data: usuarios, error } = await supabase.from('bateControleUsers').select('*');
+    if (error) usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
+
+    if (modoCadastro) {
+        if (usuarios.find(u => u.user === user)) return alert("Essa turma já existe!");
+        const novo = { 
+            user: user, 
+            pass: pass, 
+            dataCriacao: new Date().toISOString(), 
+            status: "gratis" 
+        };
+        
+        // Salva no Supabase e no LocalStorage
+        await supabase.from('bateControleUsers').insert([novo]);
+        usuarios.push(novo);
+        localStorage.setItem('bateControleUsers', JSON.stringify(usuarios));
+        
+        alert(`Turma cadastrada! ${DIAS_TRIAL} dias grátis liberados.`);
+        alternarTelaLogin();
+    } else {
+        const valid = usuarios.find(u => u.user === user && u.pass === pass);
+        if (valid) {
+            usuarioLogado = valid;
+            localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
+            atualizarVisualizacao();
+        } else {
+            alert("Usuário ou senha incorretos!");
+        }
+    }
+}
+
+function acessarPainelDono() {
+    document.getElementById('painel-dono').style.display = 'block';
+    renderizarUsuariosAdmin();
+}
+
+function fecharPainelDono() {
+    document.getElementById('painel-dono').style.display = 'none';
+    atualizarVisualizacao();
+}
+
+async function renderizarUsuariosAdmin() {
+    let { data: usuarios } = await supabase.from('bateControleUsers').select('*');
+    if(!usuarios) usuarios = JSON.parse(localStorage.getItem('bateControleUsers')) || [];
+    
+    const lista = document.getElementById('lista-usuarios-admin');
+    const termoBusca = document.getElementById('busca-admin').value.toLowerCase();
+    
+    const displayTotal = document.getElementById('admin-total-turmas');
+    const displayLucro = document.getElementById('admin-lucro-total');
+    
+    let lucroAcumulado = 0;
+    lista.innerHTML = "";
+
+    usuarios.forEach(u => {
+        if (u.status === 'pago') lucroAcumulado += VALOR_MENSALIDADE;
+    });
+
+    if(displayTotal) displayTotal.innerText = usuarios.length;
+    if(displayLucro) displayLucro.innerText = `R$ ${lucroAcumulado.toFixed(2)}`;
+
+    const filtrados = usuarios.filter(u => u.user.toLowerCase().includes(termoBusca));
+
+    if (filtrados.length === 0) {
+        lista.innerHTML = "<p style='color:#888; text-align:center;'>Nenhuma turma encontrada.</p>";
+        return;
+    }
+
+    filtrados.forEach((u) => {
+        const data = new Date(u.dataCriacao).toLocaleDateString('pt-BR');
+        const corStatus = u.status === 'pago' ? '#27ae60' : '#e67e22';
+        
+        lista.innerHTML += `
+            <div style="background:#222; padding:15px; margin-bottom:12px; border-radius:12px; border-left: 6px solid ${corStatus}">
+                <p style="margin:0; font-size:1rem;"><strong>Turma:</strong> ${u.user}</p>
+                <p style="margin:5px 0; font-size:0.75rem; color:#aaa;">Desde: ${data} | Status: ${u.status.toUpperCase()}</p>
+                <div style="display:flex; gap:5px; margin-top:10px;">
+                    <button onclick="liberarAcesso('${u.user}')" style="background:#27ae60; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer; flex:3; font-weight:bold;">Confirmar Pago</button>
+                    <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:#444; color:white; padding:10px; border:none; border-radius:8px; cursor:pointer; flex:1;">❌</button>
+                </div>
+            </div>
+        `;
+    });
+}
+
+async function liberarAcesso(nomeUsuario) {
+    const { error } = await supabase.from('bateControleUsers').update({ status: 'pago', dataCriacao: new Date().toISOString() }).eq('user', nomeUsuario);
+    if (!error) {
+        alert("ACESSO LIBERADO NA NUVEM!");
+        renderizarUsuariosAdmin();
+    }
+}
+
+async function deletarUsuarioAdmin(nomeUsuario) {
+    if(confirm(`Apagar turma ${nomeUsuario}?`)) {
+        await supabase.from('bateControleUsers').delete().eq('user', nomeUsuario);
+        renderizarUsuariosAdmin();
+    }
+}
+
+function alternarTelaLogin() {
+    modoCadastro = !modoCadastro;
+    const titulo = document.getElementById('login-titulo');
+    const btnPrincipal = document.getElementById('btn-login-entrar');
+    const linkAlternar = document.getElementById('link-alternar');
+    const textoAlternar = document.getElementById('texto-alternar');
+
+    if (modoCadastro) {
+        titulo.innerText = "NOVA TURMA 🎭";
+        btnPrincipal.innerText = "Criar Minha Turma";
+        textoAlternar.innerText = "Já tem conta?";
+        linkAlternar.innerText = "Fazer Login";
+    } else {
+        titulo.innerText = "BATE-LOGIN 🤡";
+        btnPrincipal.innerText = "Entrar no Painel";
+        textoAlternar.innerText = "Não tem conta?";
+        linkAlternar.innerText = "Cadastrar Turma";
+    }
+}
+
+function fazerLogout() {
+    localStorage.removeItem('bateControleSessao');
+    usuarioLogado = null;
+    window.location.reload();
+}
+
+// ==========================================
+// 2. LÓGICA DO APP (FINANCEIRO COM SUPABASE)
+// ==========================================
+let componentes = [];
+let custosExtras = [];
+let filtroAtual = 'todos';
+
+async function carregarDadosUsuario() {
+    if(!usuarioLogado) return;
+    
+    // Tenta carregar do Supabase primeiro
+    let { data: compCloud } = await supabase.from('componentes').select('*').eq('turma_id', usuarioLogado.user);
+    let { data: extraCloud } = await supabase.from('extras').select('*').eq('turma_id', usuarioLogado.user);
+
+    if (compCloud) componentes = compCloud;
+    else componentes = JSON.parse(localStorage.getItem(`data_${usuarioLogado.user}`)) || [];
+
+    if (extraCloud) custosExtras = extraCloud;
+    else custosExtras = JSON.parse(localStorage.getItem(`extras_${usuarioLogado.user}`)) || [];
+}
+
+async function salvarComponenteNuvem(c) {
+    if(!usuarioLogado) return;
+    localStorage.setItem(`data_${usuarioLogado.user}`, JSON.stringify(componentes));
+    await supabase.from('componentes').upsert({
+        id: c.id_db || undefined, // Supabase gera UUID se for nulo
+        turma_id: usuarioLogado.user,
+        nome: c.nome,
+        valor_total: c.valorTotal,
+        valor_pago: c.valorPago,
+        telefone: c.telefone,
+        vencimento: c.vencimento
+    });
+}
+
+async function adicionarCustoExtra() {
+    const desc = document.getElementById('descExtra').value;
+    const valor = parseFloat(document.getElementById('valorExtra').value);
+    if (desc && !isNaN(valor)) {
+        const novoExtra = { turma_id: usuarioLogado.user, descricao: desc, valor: valor };
+        custosExtras.push(novoExtra);
+        
+        await supabase.from('extras').insert([novoExtra]);
+        localStorage.setItem(`extras_${usuarioLogado.user}`, JSON.stringify(custosExtras));
+        
+        document.getElementById('descExtra').value = '';
+        document.getElementById('valorExtra').value = '';
+        await atualizarTabela();
+    }
+}
+
+async function adicionarComponente() {
+    const nome = document.getElementById('nome').value;
+    const valor = parseFloat(document.getElementById('valorTotal').value);
+    const tel = document.getElementById('telefone').value.replace(/\D/g, '');
+    const data = document.getElementById('dataVencimento').value;
+
+    if (nome && !isNaN(valor) && tel && data) {
+        const novo = { 
+            nome, 
+            valorTotal: valor, 
+            valorPago: 0, 
+            telefone: tel, 
+            vencimento: data 
+        };
+        
+        componentes.push(novo);
+        await salvarComponenteNuvem(novo);
+        await atualizarTabela();
+        
+        document.getElementById('nome').value = '';
+        document.getElementById('valorTotal').value = '';
+        document.getElementById('telefone').value = '';
+        alert("Componente salvo na nuvem!");
+    } else {
+        alert("Preencha todos os campos!");
+    }
+}
+
+function atualizarResumo() {
+    let pago = 0, metaFanta = 0;
+    let totalExtras = custosExtras.reduce((sum, e) => sum + e.valor, 0);
+    componentes.forEach(c => { 
+        metaFanta += (c.valorTotal || c.valor_total); 
+        pago += (c.valorPago || c.valor_pago); 
+    });
+    const rateio = componentes.length > 0 ? (totalExtras / componentes.length) : 0;
+    
+    document.getElementById('total-componentes').innerText = componentes.length;
+    document.getElementById('meta-total').innerText = `R$ ${(metaFanta + totalExtras).toFixed(2)}`;
+    document.getElementById('total-pago').innerText = `R$ ${pago.toFixed(2)}`;
+    document.getElementById('total-devedor').innerText = `R$ ${(metaFanta + totalExtras - pago).toFixed(2)}`;
+    document.getElementById('valorExtraPorPessoa').innerText = `R$ ${rateio.toFixed(2)}`;
+    
+    document.getElementById('listaExtras').innerHTML = custosExtras.map(e => `<li>✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</li>`).join('');
+    return rateio;
+}
+
+async function atualizarTabela() {
+    await carregarDadosUsuario();
+    const rateio = atualizarResumo();
+    const corpo = document.getElementById('corpoTabela');
+    const busca = document.getElementById('buscaNome') ? document.getElementById('buscaNome').value.toLowerCase() : "";
+    
+    corpo.innerHTML = '';
+
+    componentes.forEach(c => {
+        // Ajuste para ler tanto do LocalStorage quanto do Supabase (nomes de colunas diferentes)
+        const cNome = c.nome;
+        const cTotal = (c.valorTotal || c.valor_total);
+        const cPago = (c.valorPago || c.valor_pago);
+        const cVenc = c.vencimento;
+        const cID = c.id;
+
+        if (busca && !cNome.toLowerCase().includes(busca)) return;
+        const totalComRateio = cTotal + rateio;
+        const saldo = totalComRateio - cPago;
+        
+        const hoje = new Date(); hoje.setHours(0,0,0,0);
+        const venc = new Date(cVenc + 'T00:00:00');
+        let statusCls = "bg-ok";
+        
+        if (saldo > 0 && venc < hoje) statusCls = "bg-atrasado";
+        if (filtroAtual === 'atrasado' && (saldo <= 0 || venc >= hoje)) return;
+        if (filtroAtual === 'em-dia' && (saldo > 0 && venc < hoje)) return;
+
+        corpo.innerHTML += `
+            <tr class="${statusCls}">
+                <td>
+                    <strong>${cNome}</strong><br>
+                    <span class="valor-extra-badge">F: R$ ${cTotal.toFixed(2)} | E: R$ ${rateio.toFixed(2)}</span>
+                </td>
+                <td>R$ ${totalComRateio.toFixed(2)}</td>
+                <td style="color:#27ae60">R$ ${cPago.toFixed(2)}</td>
+                <td style="color:${saldo > 0 ? '#e74c3c':'#27ae60'}">R$ ${saldo.toFixed(2)}</td>
+                <td>${cVenc.split('-').reverse().join('/')}</td>
+                <td>
+                    <div style="display:flex; gap:2px">
+                        <button class="btn-acao-grande btn-pgto" onclick="registrarPagamento('${cID}')">💸</button>
+                        <button class="btn-acao-grande btn-wpp" onclick="cobrarWhatsApp('${cID}', ${saldo}, ${rateio})">📱</button>
+                        <button class="btn-acao-grande btn-del" onclick="removerComponente('${cID}')">❌</button>
+                    </div>
+                </td>
+            </tr>`;
+    });
+}
+
+async function registrarPagamento(id) {
+    const v = parseFloat(prompt("Valor do pagamento:"));
+    if (isNaN(v) || v <= 0) return;
+    
+    const c = componentes.find(x => x.id == id);
+    if (c) {
+        if(c.valorPago !== undefined) c.valorPago += v; else c.valor_pago += v;
+        
+        // Salva no Supabase
+        await supabase.from('componentes').update({ valor_pago: (c.valorPago || c.valor_pago) }).eq('id', id);
+        
+        await atualizarTabela();
+        alert(`Pagamento registrado na nuvem!`);
+    }
+}
+
+function cobrarWhatsApp(id, saldo, rateio) {
+    const c = componentes.find(x => x.id == id);
+    const msg = `Olá *${c.nome}*! 🤡%0A%0ASaldo Devedor: *R$ ${saldo.toFixed(2)}*%0AVencimento: ${c.vencimento.split('-').reverse().join('/')}%0A%0A_Favor regularizar!_`;
+    window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
+}
+
+async function removerComponente(id) { 
+    if(confirm("Remover?")) { 
+        await supabase.from('componentes').delete().eq('id', id);
+        await atualizarTabela(); 
+    } 
+}
+
+function filtrar(t) { 
+    filtroAtual = t; 
+    atualizarTabela(); 
+}
+
+async function zerarTudo() { 
+    if(confirm("Zerar temporada? Isso apagará os dados na nuvem!")) { 
+        await supabase.from('componentes').delete().eq('turma_id', usuarioLogado.user);
+        await supabase.from('extras').delete().eq('turma_id', usuarioLogado.user);
+        await atualizarTabela(); 
+    } 
+}
+
+async function gerarRelatorioPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const rateio = atualizarResumo();
+    doc.text(`Financeiro: ${usuarioLogado.user}`, 14, 20);
+    const body = componentes.map(c => [
+        c.nome, 
+        ((c.valorTotal || c.valor_total)+rateio).toFixed(2), 
+        (c.valorPago || c.valor_pago).toFixed(2), 
+        ((c.valorTotal || c.valor_total)+rateio-(c.valorPago || c.valor_pago)).toFixed(2), 
+        c.vencimento.split('-').reverse().join('/')
+    ]);
+    doc.autoTable({ 
+        startY: 25, 
+        head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], 
+        body: body 
+    });
+    doc.save(`relatorio_${usuarioLogado.user}.pdf`);
+}
+
+window.onload = atualizarVisualizacao;
