@@ -7,95 +7,120 @@
     <link rel="stylesheet" href="style.css">
     
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
     
     <style>
-        /* Ajustes de toque e visibilidade mobile */
+        :root {
+            --primary: #e67e22;
+            --success: #27ae60;
+            --danger: #e74c3c;
+            --dark: #2c3e50;
+            --light: #f4f7f6;
+        }
+
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--light); }
+
+        /* Estilos de Botões */
         .btn-acao-grande {
             font-size: 1.2rem !important;
             padding: 10px !important;
             margin: 2px;
-            border-radius: 8px;
+            border-radius: 10px;
             border: none;
             cursor: pointer;
-            transition: 0.2s;
+            transition: transform 0.1s;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            min-width: 44px; 
-            min-height: 44px;
+            min-width: 46px; 
+            min-height: 46px;
         }
+        .btn-acao-grande:active { transform: scale(0.95); }
+
         .btn-pgto { background-color: #f1c40f; color: #000; }
         .btn-wpp { background-color: #25D366; color: white; }
-        .btn-del { background-color: #e74c3c; color: white; }
-        
-        .valor-extra-badge {
-            background: #fff3e0;
-            color: #e67e22;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.75rem;
-            display: block;
-            margin-top: 4px;
-            border: 1px solid #ffe0b2;
-            white-space: nowrap;
-        }
+        .btn-del { background-color: var(--danger); color: white; }
 
-        .btn-zerar {
+        /* Botão Moderno WhatsApp Vencimentos */
+        .btn-avisar-vencimentos {
             width: 100%;
-            margin-top: 10px;
-            margin-bottom: 20px;
-            background: #bdc3c7;
-            color: #333;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: bold;
-            cursor: pointer;
-        }
-
-        .overflow-x-auto {
-            width: 100%;
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-            border-radius: 8px;
-            background: white;
-        }
-
-        input, select, button {
-            max-width: 100%;
-            box-sizing: border-box;
-        }
-
-        header h1 { font-size: 1.5rem; }
-
-        /* Estilos novos para o Painel do Dono */
-        .admin-card {
-            background: #222;
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
-            border: 1px solid #444;
-        }
-        .admin-card h3 { margin: 5px 0 0 0; font-size: 1.2rem; }
-        .admin-card span { font-size: 0.7rem; text-transform: uppercase; color: #888; }
-        
-        /* Botão WhatsApp no Bloqueio */
-        .btn-avisar-pagamento {
-            background: #25d366;
+            background: #075e54;
             color: white;
-            padding: 15px;
+            padding: 14px;
             border: none;
             border-radius: 12px;
-            width: 100%;
             font-weight: bold;
-            font-size: 1rem;
-            cursor: pointer;
+            font-size: 0.95rem;
             margin-bottom: 15px;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
         }
+
+        /* Resumo Financeiro Moderno */
+        #resumo-financeiro {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .card-resumo {
+            background: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            text-align: center;
+            border-bottom: 4px solid #ddd;
+        }
+        .card-resumo span { font-size: 0.7rem; text-transform: uppercase; color: #7f8c8d; font-weight: bold; }
+        .card-resumo h4 { margin: 5px 0 0; font-size: 1.1rem; color: var(--dark); }
+
+        /* Seções de Formulário */
+        .glass-section {
+            background: white;
+            padding: 20px;
+            border-radius: 18px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+        .glass-section h3 { margin-top: 0; font-size: 1rem; color: var(--dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            background: #fafafa;
+            transition: 0.3s;
+        }
+        input:focus { border-color: var(--primary); outline: none; background: #fff; }
+
+        /* Tabela Mobile */
+        .overflow-x-auto {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            overflow: hidden;
+        }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+        th { background: #f8f9fa; padding: 12px; text-align: left; color: #7f8c8d; }
+        td { padding: 12px; border-top: 1px solid #eee; }
+
+        .btn-system {
+            padding: 12px;
+            border-radius: 10px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+        .btn-pdf { background: #34495e; color: white; }
+        .btn-zerar { background: #fdf0f0; color: var(--danger); border: 1px solid #f9d6d6; }
     </style>
 </head>
 <body>
@@ -104,13 +129,10 @@
         <div class="login-box">
             <h2 id="login-titulo">BATE-LOGIN 🤡</h2>
             <p id="login-subtitulo">Acesse para gerenciar sua turma</p>
-            
             <div id="login-inputs">
                 <input type="text" id="usuario" placeholder="Nome de usuário">
                 <input type="password" id="senha" placeholder="Sua senha">
-                
                 <button id="btn-login-entrar" onclick="executarAcaoPrincipal()">Entrar</button>
-                
                 <p class="toggle-login">
                     <span id="texto-alternar">Não tem conta?</span> 
                     <a href="javascript:void(0)" onclick="alternarTelaLogin()" id="link-alternar">Cadastrar Turma</a>
@@ -119,128 +141,96 @@
         </div>
     </section>
 
-    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:20000; color:white; padding:20px; overflow-y:auto; font-family: sans-serif;">
+    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:20000; color:white; padding:20px; overflow-y:auto;">
         <div style="max-width: 500px; margin: 0 auto;">
             <h2 style="text-align: center;">💎 PAINEL DO DONO</h2>
-            <p style="text-align: center; color: #e67e22;">Gerencie as assinaturas de R$ 69,90</p>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 20px 0;">
-                <div class="admin-card">
-                    <span>Total Turmas</span>
-                    <h3 id="admin-total-turmas">0</h3>
-                </div>
-                <div class="admin-card" style="border-color: #27ae60;">
-                    <span style="color: #27ae60;">Lucro Total</span>
-                    <h3 id="admin-lucro-total" style="color: #27ae60;">R$ 0,00</h3>
-                </div>
-            </div>
-
-            <input type="text" id="busca-admin" placeholder="🔍 Buscar turma pelo nome..." 
-                   style="width: 100%; padding: 12px; border-radius: 8px; border: none; background: #333; color: white; margin-bottom: 20px;"
-                   onkeyup="renderizarUsuariosAdmin()">
-
             <div id="lista-usuarios-admin"></div>
-            
-            <br>
-            <button onclick="fecharPainelDono()" style="background:#444; color:white; padding:12px; border:none; border-radius:8px; width:100%; font-weight:bold; cursor:pointer;">Sair do Painel</button>
+            <button onclick="fecharPainelDono()" class="btn-system" style="background: #444; color: white;">Fechar</button>
         </div>
     </div>
 
-    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.98); z-index:15000; color:white; text-align:center; padding:40px; font-family: sans-serif;">
-        <div style="max-width: 400px; margin: 20px auto;">
-            <h1 style="font-size: 3rem;">🔒</h1>
-            <h2 style="color: #e67e22;">ASSINATURA EXPIRADA</h2>
-            <p style="font-size: 1rem; line-height: 1.5; margin: 20px 0;">Seu período grátis acabou. Realize o pagamento para liberar o acesso.</p>
-            <div style="background: #fff; color: #333; padding: 20px; border-radius: 15px; margin-bottom: 20px;">
-                <p style="font-weight: bold; margin-bottom: 10px;">Valor: R$ 69,90</p>
-                <p style="font-size: 0.8rem; color: #666;">Chave Pix (Celular):</p>
-                <p id="pix-texto" style="font-size: 1.2rem; font-weight: bold; color: #27ae60;">(21) 98507-2328</p>
-            </div>
-            
-            <button class="btn-avisar-pagamento" onclick="avisarPagamento()">✅ JÁ FIZ O PIX! ME LIBERA</button>
-            
-            <button onclick="fazerLogout()" style="background:none; border: 1px solid #555; color: #ccc; padding: 10px 20px; border-radius: 8px; cursor: pointer;">Sair da Conta</button>
+    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#1a1a1a; z-index:15000; color:white; text-align:center; padding:40px;">
         </div>
-    </div>
 
     <div id="app-content" style="display: none;">
-        <header>
-            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; width: 100%; padding: 0 10px;">
-                <div style="flex-grow: 1; text-align: center;">
-                    <h1>BATE-CONTROLE 🤩</h1>
-                    <p style="font-size: 0.9rem; opacity: 0.8;">Gestão de Turma</p>
-                </div>
-                <button onclick="fazerLogout()" style="background: rgba(0,0,0,0.2); color: white; border: 1px solid white; padding: 5px 10px; border-radius: 5px; font-size: 0.8rem;">Sair</button>
+        <header style="background: white; padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; width: 100%; padding: 0 20px;">
+                <h1 style="margin:0; font-size: 1.2rem; color: var(--dark);">BATE-CONTROLE 🤩</h1>
+                <button onclick="fazerLogout()" style="background: #eee; border:none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">Sair</button>
             </div>
         </header>
 
-        <main style="padding: 10px;">
-            <section id="resumo-financeiro" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                <div class="card-resumo"><span>Comp.</span><h4 id="total-componentes">0</h4></div>
-                <div class="card-resumo"><span>Meta</span><h4 id="meta-total">R$ 0</h4></div>
-                <div class="card-resumo"><span>Pago</span><h4 id="total-pago" style="color: #27ae60;">R$ 0</h4></div>
-                <div class="card-resumo"><span>Dívida</span><h4 id="total-devedor" style="color: #ff4d4d;">R$ 0</h4></div>
+        <main style="max-width: 900px; margin: 0 auto; padding: 0 15px 50px 15px;">
+            
+            <section id="resumo-financeiro">
+                <div class="card-resumo"><span>Componentes</span><h4 id="total-componentes">0</h4></div>
+                <div class="card-resumo"><span>Meta Final</span><h4 id="meta-total">R$ 0</h4></div>
+                <div class="card-resumo" style="border-bottom-color: var(--success);"><span>Total Pago</span><h4 id="total-pago" style="color: var(--success);">R$ 0</h4></div>
+                <div class="card-resumo" style="border-bottom-color: var(--danger);"><span>Restante</span><h4 id="total-devedor" style="color: var(--danger);">R$ 0</h4></div>
             </section>
 
-            <section id="form-container" style="border-left: 5px solid #e67e22; padding: 15px; margin-bottom: 15px; background: #fff; border-radius: 8px;">
+            <section class="glass-section" style="border-top: 4px solid var(--primary);">
                 <h3>📊 Custos Extras (Rateio)</h3>
-                <div id="form-section">
-                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                        <input type="text" id="descExtra" placeholder="Ex: Ônibus" style="flex: 2; min-width: 120px;">
-                        <input type="number" id="valorExtra" placeholder="R$" style="flex: 1; min-width: 70px;">
-                        <button onclick="adicionarCustoExtra()" style="background:#e67e22; color:white; padding:10px 15px; border-radius:8px; border: none; font-weight: bold;">+</button>
-                    </div>
-                    <ul id="listaExtras" style="list-style:none; font-size: 0.85rem; margin-top:10px; color:#555;"></ul>
-                    <div style="margin-top:10px; font-weight:bold; color:#d35400; font-size: 0.9rem;">
-                        Extra por pessoa: <span id="valorExtraPorPessoa">R$ 0,00</span>
-                    </div>
+                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+                    <input type="text" id="descExtra" placeholder="Ex: Ônibus" style="flex: 2;">
+                    <input type="number" id="valorExtra" placeholder="R$" style="flex: 1;">
+                    <button onclick="adicionarCustoExtra()" style="background:var(--primary); color:white; border:none; padding:0 20px; border-radius:10px; font-weight:bold;">+</button>
+                </div>
+                <ul id="listaExtras" style="padding:0; margin:0;"></ul>
+                <div style="margin-top:15px; padding-top:10px; border-top: 1px dashed #eee; font-weight:bold; color:var(--primary); font-size: 0.9rem; text-align: right;">
+                    + R$ <span id="valorExtraPorPessoa">0,00</span> por pessoa
                 </div>
             </section>
 
-            <section id="form-container" style="padding: 15px; background: #fff; border-radius: 8px; margin-bottom: 15px;">
-                <h3>👤 Novo Componente</h3>
-                <div id="form-section" style="display: flex; flex-direction: column; gap: 10px;">
-                    <input type="text" id="nome" placeholder="Nome do Componente">
-                    <input type="number" id="valorTotal" placeholder="Valor da Fantasia">
-                    <input type="text" id="telefone" placeholder="WhatsApp (DDD + Número)">
-                    <div style="display: flex; gap: 10px; align-items: center; background: #f9f9f9; padding: 8px; border-radius: 5px;">
-                        <label style="font-size: 0.8rem; color: #666; white-space: nowrap;">Vencimento:</label>
-                        <input type="date" id="dataVencimento" style="border: none; background: transparent; width: 100%;">
+            <section class="glass-section">
+                <h3>👤 Adicionar Componente</h3>
+                <div style="display: grid; gap: 10px;">
+                    <input type="text" id="nome" placeholder="Nome Completo">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="valorTotal" placeholder="Valor Fantasia (R$)">
+                        <input type="text" id="telefone" placeholder="WhatsApp">
                     </div>
-                    <button id="btn-cadastrar" onclick="adicionarComponente()" style="padding: 12px; font-weight: bold;">Salvar Componente</button>
+                    <div style="background: #f9f9f9; padding: 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.8rem; color: #7f8c8d;">Vencimento:</span>
+                        <input type="date" id="dataVencimento" style="border:none; background:transparent; padding:0;">
+                    </div>
+                    <button id="btn-cadastrar" onclick="adicionarComponente()" style="background:var(--dark); color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-top:5px;">Salvar no Banco</button>
                 </div>
             </section>
 
-            <div style="margin-bottom: 20px;">
-                <input type="text" id="buscaNome" placeholder="🔍 Buscar nome..." onkeyup="atualizarTabela()" style="width: 100%; padding: 12px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #ddd;">
-                <div id="filtros" style="display: flex; gap: 5px;">
-                    <button onclick="filtrar('todos')" style="flex: 1; padding: 8px; font-size: 0.8rem;">Todos</button>
-                    <button onclick="filtrar('atrasado')" class="f-atrasado" style="flex: 1; padding: 8px; font-size: 0.8rem;">Atrasados</button>
-                    <button onclick="filtrar('em-dia')" class="f-ok" style="flex: 1; padding: 8px; font-size: 0.8rem;">Em Dia</button>
+            <div style="margin: 30px 0 10px 0;">
+                <input type="text" id="buscaNome" placeholder="🔍 Buscar por nome..." onkeyup="atualizarTabela()" style="margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                <div style="display: flex; gap: 8px;">
+                    <button onclick="filtrar('todos')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:white;">Todos</button>
+                    <button onclick="filtrar('atrasado')" style="flex:1; padding:10px; border-radius:8px; border:none; background:#fff1f0; color:var(--danger); font-weight:bold;">Atrasados</button>
+                    <button onclick="filtrar('em-dia')" style="flex:1; padding:10px; border-radius:8px; border:none; background:#f6ffed; color:var(--success); font-weight:bold;">Em Dia</button>
                 </div>
             </div>
 
-            <button onclick="gerarRelatorioPDF()" style="width: 100%; margin-bottom: 10px; padding: 12px; background: #333; color: white; border-radius: 8px; border: none; font-weight: bold;">📄 Baixar Relatório (PDF)</button>
+            <button onclick="avisarVencimentosAmanha()" class="btn-avisar-vencimentos">
+                <span>📢</span> AVISAR VENCIMENTOS DE AMANHÃ
+            </button>
 
-            <button onclick="zerarTudo()" class="btn-zerar">⚠️ Zerar Temporada</button>
+            <div class="overflow-x-auto">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Total</th> 
+                            <th>Pago</th>  
+                            <th>Saldo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="corpoTabela"></tbody>
+                </table>
+            </div>
 
-            <section id="lista-section">
-                <div class="overflow-x-auto">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Nome</th>
-                                <th>Total</th> 
-                                <th>Pago</th>  
-                                <th>Dívida</th>
-                                <th>Venc.</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="corpoTabela"></tbody>
-                    </table>
-                </div>
-            </section>
+            <div style="margin-top: 30px; display: grid; gap: 10px;">
+                <button onclick="gerarRelatorioPDF()" class="btn-system btn-pdf">📄 Baixar Relatório PDF</button>
+                <button onclick="zerarTemporada()" class="btn-system btn-zerar">🔄 Zerar Temporada (Limpar Tudo)</button>
+            </div>
+
         </main>
     </div>
 
