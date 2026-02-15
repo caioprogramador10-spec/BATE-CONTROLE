@@ -5,7 +5,7 @@ const SUPABASE_URL = 'https://ovrkpnusgulvkjtnhcsr.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im92cmtwbnVzZ3VsdmtqdG5oY3NyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA1ODI2NTEsImV4cCI6MjA4NjE1ODY1MX0.EF4opjkiJfSi4Nr3M4DDTvhZnM8itILurG_OTLw_q-I'; 
 
 const supabaseInstance = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-const TABELA_USUARIOS = '"bateControleUsers"'; // Sintaxe correta para evitar Erro 404
+const TABELA_USUARIOS = 'batecontroleusers'; 
 
 // ==========================================
 // CONFIGURAÇÕES DE VENDA (SaaS)
@@ -66,7 +66,7 @@ async function atualizarVisualizacao() {
 function verificarAssinatura() {
     if (usuarioLogado.status === "admin" || usuarioLogado.status === "pago") return true; 
     const hoje = new Date();
-    const dataCadastro = new Date(usuarioLogado.dataCriacao);
+    const dataCadastro = new Date(usuarioLogado.criacao);
     const diasUso = Math.floor((hoje - dataCadastro) / (1000 * 60 * 60 * 24));
     return !(usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL);
 }
@@ -88,8 +88,8 @@ async function executarAcaoPrincipal() {
         if (error) throw error;
 
         if (modoCadastro) {
-            if (usuarios.find(u => u.user === user)) return alert("Essa turma já existe!");
-            const novo = { user, pass, dataCriacao: new Date().toISOString(), status: "gratis" };
+            if (usuarios && usuarios.find(u => u.user === user)) return alert("Essa turma já existe!");
+            const novo = { user: user, pass: pass, criacao: new Date().toISOString(), status: "gratis" };
             const { error: insErr } = await supabaseInstance.from(TABELA_USUARIOS).insert([novo]);
             if (insErr) throw insErr;
             alert(`Turma ${user.toUpperCase()} cadastrada!`);
@@ -104,7 +104,7 @@ async function executarAcaoPrincipal() {
         }
     } catch (e) { 
         console.error(e);
-        alert("Erro de Conexão: Verifique se desativou o RLS no painel do Supabase."); 
+        alert("Erro no banco de dados."); 
     }
 }
 
@@ -191,8 +191,8 @@ async function adicionarCustoExtra() {
 function atualizarResumo() {
     let pago = 0, metaFanta = 0, totalExtras = custosExtras.reduce((sum, e) => sum + e.valor, 0);
     componentes.forEach(c => { 
-        metaFanta += (c.valor_total || c.valorTotal || 0); 
-        pago += (c.valor_pago || c.valorPago || 0); 
+        metaFanta += (c.valor_total || 0); 
+        pago += (c.valor_pago || 0); 
     });
     const rateio = componentes.length > 0 ? (totalExtras / componentes.length) : 0;
     
@@ -201,9 +201,66 @@ function atualizarResumo() {
     document.getElementById('total-pago').innerText = `R$ ${pago.toFixed(2)}`;
     document.getElementById('total-devedor').innerText = `R$ ${(metaFanta + totalExtras - pago).toFixed(2)}`;
     document.getElementById('valorExtraPorPessoa').innerText = `R$ ${rateio.toFixed(2)}`;
-    document.getElementById('listaExtras').innerHTML = custosExtras.map(e => `<li>✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</li>`).join('');
+    
+    document.getElementById('listaExtras').innerHTML = custosExtras.map(e => `
+        <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <span>✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</span>
+            <button onclick="removerExtra('${e.id}')" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-weight:bold; font-size:1.1rem;">❌</button>
+        </li>`).join('');
     return rateio;
 }
+
+async function removerExtra(id) {
+    if(confirm("Remover este custo extra?")) {
+        await supabaseInstance.from('extras').delete().eq('id', id);
+        await atualizarTabela();
+    }
+}
+
+// ==========================================
+// NOVAS FUNÇÕES: ZERAR E AVISAR AMANHÃ
+// ==========================================
+
+async function zerarTemporada() {
+    if(!confirm("⚠️ ATENÇÃO: Isso vai zerar todos os pagamentos e excluir todos os custos extras da turma. Continuar?")) return;
+    
+    try {
+        // 1. Apagar extras
+        await supabaseInstance.from('extras').delete().eq('turma_id', usuarioLogado.user);
+        
+        // 2. Zerar valor_pago de todos
+        await supabaseInstance.from('componentes').update({ valor_pago: 0 }).eq('turma_id', usuarioLogado.user);
+        
+        alert("Temporada zerada com sucesso! 🤡");
+        await atualizarTabela();
+    } catch (e) {
+        alert("Erro ao zerar temporada.");
+    }
+}
+
+async function avisarVencimentosAmanha() {
+    const amanha = new Date();
+    amanha.setDate(amanha.getDate() + 1);
+    const dataAmanhaStr = amanha.toISOString().split('T')[0];
+    
+    const avisados = componentes.filter(c => c.vencimento === dataAmanhaStr);
+    
+    if (avisados.length === 0) {
+        alert("Ninguém vence amanhã! 🎉");
+        return;
+    }
+
+    if(confirm(`Enviar mensagem para ${avisados.length} pessoas que vencem amanhã?`)) {
+        avisados.forEach((c, index) => {
+            setTimeout(() => {
+                const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${c.vencimento.split('-').reverse().join('/')}).%0A%0A_Evite atrasos!_`;
+                window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
+            }, index * 1000); // Delay de 1s entre janelas para não travar o navegador
+        });
+    }
+}
+
+// ==========================================
 
 async function atualizarTabela() {
     await carregarDadosUsuario();
@@ -214,8 +271,8 @@ async function atualizarTabela() {
     corpo.innerHTML = '';
 
     componentes.forEach(c => {
-        const cTotal = (c.valor_total || c.valorTotal || 0);
-        const cPago = (c.valor_pago || c.valorPago || 0);
+        const cTotal = (c.valor_total || 0);
+        const cPago = (c.valor_pago || 0);
         const totalComRateio = cTotal + rateio;
         const saldo = totalComRateio - cPago;
 
@@ -245,11 +302,21 @@ async function atualizarTabela() {
 }
 
 async function registrarPagamento(id) {
-    const v = parseFloat(prompt("Valor:"));
+    const v = parseFloat(prompt("Valor do pagamento:"));
     if (isNaN(v)) return;
+
     const comp = componentes.find(x => x.id == id);
-    const novoPago = (comp.valor_pago || comp.valorPago || 0) + v;
-    await supabaseInstance.from('componentes').update({ valor_pago: novoPago }).eq('id', id);
+    const novoPago = (comp.valor_pago || 0) + v;
+
+    let dataObj = new Date(comp.vencimento + 'T12:00:00'); 
+    dataObj.setMonth(dataObj.getMonth() + 1);
+    const novoVencimento = dataObj.toISOString().split('T')[0];
+
+    await supabaseInstance.from('componentes').update({ 
+        valor_pago: novoPago,
+        vencimento: novoVencimento 
+    }).eq('id', id);
+
     await atualizarTabela();
 }
 
@@ -266,7 +333,7 @@ async function removerComponente(id) {
 async function gerarRelatorioPDF() {
     const { jsPDF } = window.jspdf; const doc = new jsPDF(); const rateio = atualizarResumo();
     doc.text(`Financeiro: ${usuarioLogado.user}`, 14, 20);
-    const body = componentes.map(c => [c.nome, ((c.valor_total || c.valorTotal) + rateio).toFixed(2), (c.valor_pago || c.valorPago).toFixed(2), ((c.valor_total || c.valorTotal) + rateio - (c.valor_pago || c.valorPago)).toFixed(2), c.vencimento.split('-').reverse().join('/')]);
+    const body = componentes.map(c => [c.nome, (c.valor_total + rateio).toFixed(2), c.valor_pago.toFixed(2), (c.valor_total + rateio - c.valor_pago).toFixed(2), c.vencimento.split('-').reverse().join('/')]);
     doc.autoTable({ startY: 25, head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], body: body });
     doc.save(`relatorio_${usuarioLogado.user}.pdf`);
 }
