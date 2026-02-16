@@ -39,14 +39,14 @@ async function atualizarVisualizacao() {
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
             bloqueioAssinatura.innerHTML = `
-                <div style="background:#1a1a1a; padding:30px; border-radius:20px; border:2px solid #e74c3c; text-align:center; max-width:400px; margin: 20px auto;">
-                    <h2 style="color:#e74c3c">Acesso Expirado! 🤡</h2>
-                    <p style="color:#ddd">O período de teste da turma <strong>${usuarioLogado.user.toUpperCase()}</strong> chegou ao fim.</p>
-                    <hr style="border:0; border-top:1px solid #333; margin:20px 0;">
-                    <p style="font-size:1.1rem">Valor da Assinatura: <br><strong style="font-size:1.5rem; color:#27ae60">R$ ${VALOR_MENSALIDADE.toFixed(2)}</strong></p>
-                    <p style="background:#000; padding:10px; border-radius:8px; margin:15px 0; border:1px dashed #555;">Chave PIX: <br><strong>${MEU_PIX}</strong></p>
-                    <button onclick="avisarPagamento()" style="background:#25d366; color:white; padding:15px; border:none; border-radius:12px; cursor:pointer; font-weight:bold; width:100%; font-size:1rem;">✅ JÁ FIZ O PIX! LIBERAR ACESSO</button>
-                    <button onclick="fazerLogout()" style="background:transparent; color:#888; border:none; margin-top:20px; cursor:pointer; text-decoration:underline;">Sair da conta</button>
+                <div class="glass-section" style="border: 2px solid var(--danger); text-align:center; max-width:400px; margin: 40px auto; animation: fadeInUp 0.5s;">
+                    <h2 style="color:var(--danger)">Acesso Expirado! 🤡</h2>
+                    <p style="color:var(--text-main)">O período de teste da turma <strong>${usuarioLogado.user.toUpperCase()}</strong> chegou ao fim.</p>
+                    <hr style="border:0; border-top:1px solid #ddd; margin:20px 0;">
+                    <p style="font-size:1.1rem">Valor da Assinatura: <br><strong style="font-size:1.8rem; color:var(--success)">R$ ${VALOR_MENSALIDADE.toFixed(2)}</strong></p>
+                    <div style="background:var(--bg-body); padding:15px; border-radius:12px; margin:15px 0; box-shadow: var(--shadow-down);">Chave PIX: <br><strong>${MEU_PIX}</strong></div>
+                    <button onclick="avisarPagamento()" id="btn-cadastrar" style="background:var(--success); border:none; margin-bottom:10px;">✅ JÁ FIZ O PIX! LIBERAR ACESSO</button>
+                    <button onclick="fazerLogout()" style="background:transparent; color:#888; border:none; margin-top:10px; cursor:pointer; text-decoration:underline;">Sair da conta</button>
                 </div>`;
             bloqueioAssinatura.style.display = 'block'; 
             return;
@@ -109,32 +109,40 @@ async function executarAcaoPrincipal() {
 }
 
 // ==========================================
-// 2. PAINEL DO DONO (ADMIN)
+// 2. PAINEL DO DONO (ADMIN) - AJUSTADO 3D
 // ==========================================
 async function renderizarUsuariosAdmin() {
     let { data: usuarios } = await supabaseInstance.from(TABELA_USUARIOS).select('*');
     const lista = document.getElementById('lista-usuarios-admin');
-    const termo = document.getElementById('busca-admin').value.toLowerCase();
+    const inputBusca = document.getElementById('busca-admin');
+    const termo = inputBusca ? inputBusca.value.toLowerCase() : "";
     let lucroTotal = 0;
     lista.innerHTML = "";
 
     if(usuarios) {
         usuarios.forEach(u => {
             if (u.status === 'pago') lucroTotal += VALOR_MENSALIDADE;
-            if (u.user.includes(termo)) {
-                const cor = u.status === 'pago' ? '#27ae60' : '#e67e22';
+            if (u.user.toLowerCase().includes(termo)) {
+                const corStatus = u.status === 'pago' ? 'var(--success)' : 'var(--primary)';
                 lista.innerHTML += `
-                    <div style="background:#222; padding:15px; margin-bottom:12px; border-radius:12px; border-left: 6px solid ${cor}">
-                        <p><strong>Turma:</strong> ${u.user.toUpperCase()}</p>
-                        <p style="font-size:0.75rem; color:#aaa;">Status: ${u.status.toUpperCase()}</p>
-                        <button onclick="liberarAcesso('${u.user}')" style="background:#27ae60; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">Confirmar Pago</button>
-                        <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:#444; color:white; border:none; padding:10px; border-radius:8px; cursor:pointer;">❌</button>
+                    <div class="card-resumo" style="margin-bottom:15px; border-top: none; border-left: 6px solid ${corStatus}; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="margin:0;"><strong>Turma:</strong> ${u.user.toUpperCase()}</p>
+                            <p style="font-size:0.75rem; color:var(--text-main); opacity:0.7;">Status: ${u.status.toUpperCase()}</p>
+                        </div>
+                        <div style="display:flex; gap:8px;">
+                            <button onclick="liberarAcesso('${u.user}')" class="btn-acao-grande" style="color:var(--success);">✅</button>
+                            <button onclick="deletarUsuarioAdmin('${u.user}')" class="btn-acao-grande" style="color:var(--danger);">🗑️</button>
+                        </div>
                     </div>`;
             }
         });
     }
-    document.getElementById('admin-total-turmas').innerText = usuarios ? usuarios.length : 0;
-    document.getElementById('admin-lucro-total').innerText = `R$ ${lucroTotal.toFixed(2)}`;
+    // Adicione esses elementos ao seu HTML do painel se quiser ver os totais
+    const totalTurmasEl = document.getElementById('admin-total-turmas');
+    const lucroTotalEl = document.getElementById('admin-lucro-total');
+    if(totalTurmasEl) totalTurmasEl.innerText = usuarios ? usuarios.length : 0;
+    if(lucroTotalEl) lucroTotalEl.innerText = `R$ ${lucroTotal.toFixed(2)}`;
 }
 
 async function liberarAcesso(nome) {
@@ -143,13 +151,23 @@ async function liberarAcesso(nome) {
 }
 
 async function deletarUsuarioAdmin(nome) {
-    if(confirm("Apagar?")) {
+    if(confirm("Deseja realmente apagar esta turma permanentemente?")) {
         await supabaseInstance.from(TABELA_USUARIOS).delete().eq('user', nome);
         renderizarUsuariosAdmin();
     }
 }
 
-function acessarPainelDono() { document.getElementById('painel-dono').style.display = 'block'; renderizarUsuariosAdmin(); }
+function acessarPainelDono() { 
+    const painel = document.getElementById('painel-dono');
+    painel.style.display = 'block';
+    // Adiciona busca dinâmica se não existir no HTML
+    const lista = document.getElementById('lista-usuarios-admin');
+    if(!document.getElementById('busca-admin')){
+        lista.insertAdjacentHTML('beforebegin', '<input type="text" id="busca-admin" placeholder="🔍 Filtrar turmas..." onkeyup="renderizarUsuariosAdmin()" style="margin-bottom:15px;">');
+    }
+    renderizarUsuariosAdmin(); 
+}
+
 function fecharPainelDono() { document.getElementById('painel-dono').style.display = 'none'; atualizarVisualizacao(); }
 
 // ==========================================
@@ -203,9 +221,9 @@ function atualizarResumo() {
     document.getElementById('valorExtraPorPessoa').innerText = `R$ ${rateio.toFixed(2)}`;
     
     document.getElementById('listaExtras').innerHTML = custosExtras.map(e => `
-        <li style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-            <span>✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</span>
-            <button onclick="removerExtra('${e.id}')" style="background:none; border:none; color:#e74c3c; cursor:pointer; font-weight:bold; font-size:1.1rem;">❌</button>
+        <li class="card-resumo" style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; padding:10px; border-top:none; border-left:4px solid var(--primary); text-align:left;">
+            <span style="font-weight:bold;">✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</span>
+            <button onclick="removerExtra('${e.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer; font-weight:bold; font-size:1.1rem;">❌</button>
         </li>`).join('');
     return rateio;
 }
@@ -217,20 +235,12 @@ async function removerExtra(id) {
     }
 }
 
-// ==========================================
-// NOVAS FUNÇÕES: ZERAR E AVISAR AMANHÃ
-// ==========================================
-
 async function zerarTemporada() {
     if(!confirm("⚠️ ATENÇÃO: Isso vai zerar todos os pagamentos e excluir todos os custos extras da turma. Continuar?")) return;
     
     try {
-        // 1. Apagar extras
         await supabaseInstance.from('extras').delete().eq('turma_id', usuarioLogado.user);
-        
-        // 2. Zerar valor_pago de todos
         await supabaseInstance.from('componentes').update({ valor_pago: 0 }).eq('turma_id', usuarioLogado.user);
-        
         alert("Temporada zerada com sucesso! 🤡");
         await atualizarTabela();
     } catch (e) {
@@ -242,7 +252,6 @@ async function avisarVencimentosAmanha() {
     const amanha = new Date();
     amanha.setDate(amanha.getDate() + 1);
     const dataAmanhaStr = amanha.toISOString().split('T')[0];
-    
     const avisados = componentes.filter(c => c.vencimento === dataAmanhaStr);
     
     if (avisados.length === 0) {
@@ -255,12 +264,10 @@ async function avisarVencimentosAmanha() {
             setTimeout(() => {
                 const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${c.vencimento.split('-').reverse().join('/')}).%0A%0A_Evite atrasos!_`;
                 window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
-            }, index * 1000); // Delay de 1s entre janelas para não travar o navegador
+            }, index * 1000); 
         });
     }
 }
-
-// ==========================================
 
 async function atualizarTabela() {
     await carregarDadosUsuario();
@@ -287,15 +294,17 @@ async function atualizarTabela() {
 
         corpo.innerHTML += `
             <tr class="${atrasado ? 'bg-atrasado' : 'bg-ok'}">
-                <td><strong>${c.nome}</strong><br><small>F: R$ ${cTotal.toFixed(2)} | E: R$ ${rateio.toFixed(2)}</small></td>
+                <td><strong style="color:var(--primary-dark)">${c.nome}</strong><br><small style="opacity:0.6;">F: R$ ${cTotal.toFixed(2)} | E: R$ ${rateio.toFixed(2)}</small></td>
                 <td>R$ ${totalComRateio.toFixed(2)}</td>
-                <td style="color:#27ae60">R$ ${cPago.toFixed(2)}</td>
-                <td style="color:${saldo > 0 ? '#e74c3c' : '#27ae60'}">R$ ${saldo.toFixed(2)}</td>
+                <td style="color:var(--success)">R$ ${cPago.toFixed(2)}</td>
+                <td style="color:${saldo > 0 ? 'var(--danger)' : 'var(--success)'}; font-weight:bold;">R$ ${saldo.toFixed(2)}</td>
                 <td>${c.vencimento.split('-').reverse().join('/')}</td>
                 <td>
-                    <button class="btn-acao-grande" onclick="registrarPagamento('${c.id}')">💸</button>
-                    <button class="btn-acao-grande" onclick="cobrarWhatsApp('${c.id}', ${saldo})">📱</button>
-                    <button class="btn-acao-grande" onclick="removerComponente('${c.id}')">❌</button>
+                    <div style="display:flex; gap:5px;">
+                        <button class="btn-acao-grande" onclick="registrarPagamento('${c.id}')">💸</button>
+                        <button class="btn-acao-grande" onclick="cobrarWhatsApp('${c.id}', ${saldo})">📱</button>
+                        <button class="btn-acao-grande" onclick="removerComponente('${c.id}')">❌</button>
+                    </div>
                 </td>
             </tr>`;
     });
@@ -327,7 +336,7 @@ function cobrarWhatsApp(id, saldo) {
 }
 
 async function removerComponente(id) {
-    if(confirm("Remover?")) { await supabaseInstance.from('componentes').delete().eq('id', id); await atualizarTabela(); }
+    if(confirm("Remover este componente?")) { await supabaseInstance.from('componentes').delete().eq('id', id); await atualizarTabela(); }
 }
 
 async function gerarRelatorioPDF() {
