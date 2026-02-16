@@ -9,119 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
-    
-    <style>
-        :root {
-            --primary: #e67e22;
-            --success: #27ae60;
-            --danger: #e74c3c;
-            --dark: #2c3e50;
-            --light: #f4f7f6;
-        }
-
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: var(--light); }
-
-        /* Estilos de Botões */
-        .btn-acao-grande {
-            font-size: 1.2rem !important;
-            padding: 10px !important;
-            margin: 2px;
-            border-radius: 10px;
-            border: none;
-            cursor: pointer;
-            transition: transform 0.1s;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 46px; 
-            min-height: 46px;
-        }
-        .btn-acao-grande:active { transform: scale(0.95); }
-
-        .btn-pgto { background-color: #f1c40f; color: #000; }
-        .btn-wpp { background-color: #25D366; color: white; }
-        .btn-del { background-color: var(--danger); color: white; }
-
-        /* Botão Moderno WhatsApp Vencimentos */
-        .btn-avisar-vencimentos {
-            width: 100%;
-            background: #075e54;
-            color: white;
-            padding: 14px;
-            border: none;
-            border-radius: 12px;
-            font-weight: bold;
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(37, 211, 102, 0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        /* Resumo Financeiro Moderno */
-        #resumo-financeiro {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-        .card-resumo {
-            background: white;
-            padding: 15px;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            text-align: center;
-            border-bottom: 4px solid #ddd;
-        }
-        .card-resumo span { font-size: 0.7rem; text-transform: uppercase; color: #7f8c8d; font-weight: bold; }
-        .card-resumo h4 { margin: 5px 0 0; font-size: 1.1rem; color: var(--dark); }
-
-        /* Seções de Formulário */
-        .glass-section {
-            background: white;
-            padding: 20px;
-            border-radius: 18px;
-            margin-bottom: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
-        }
-        .glass-section h3 { margin-top: 0; font-size: 1rem; color: var(--dark); margin-bottom: 15px; display: flex; align-items: center; gap: 8px; }
-
-        input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #fafafa;
-            transition: 0.3s;
-        }
-        input:focus { border-color: var(--primary); outline: none; background: #fff; }
-
-        /* Tabela Mobile */
-        .overflow-x-auto {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            overflow: hidden;
-        }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
-        th { background: #f8f9fa; padding: 12px; text-align: left; color: #7f8c8d; }
-        td { padding: 12px; border-top: 1px solid #eee; }
-
-        .btn-system {
-            padding: 12px;
-            border-radius: 10px;
-            border: none;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 10px;
-        }
-        .btn-pdf { background: #34495e; color: white; }
-        .btn-zerar { background: #fdf0f0; color: var(--danger); border: 1px solid #f9d6d6; }
-    </style>
 </head>
 <body>
 
@@ -133,19 +20,19 @@
                 <input type="text" id="usuario" placeholder="Nome de usuário">
                 <input type="password" id="senha" placeholder="Sua senha">
                 <button id="btn-login-entrar" onclick="executarAcaoPrincipal()">Entrar</button>
-                <p class="toggle-login">
+                <p class="toggle-login" style="margin-top: 15px; font-size: 0.9rem;">
                     <span id="texto-alternar">Não tem conta?</span> 
-                    <a href="javascript:void(0)" onclick="alternarTelaLogin()" id="link-alternar">Cadastrar Turma</a>
+                    <a href="javascript:void(0)" onclick="alternarTelaLogin()" id="link-alternar" style="color: var(--primary); font-weight: bold; text-decoration: none;">Cadastrar Turma</a>
                 </p>
             </div>
         </div>
     </section>
 
-    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:20000; color:white; padding:20px; overflow-y:auto;">
-        <div style="max-width: 500px; margin: 0 auto;">
-            <h2 style="text-align: center;">💎 PAINEL DO DONO</h2>
-            <div id="lista-usuarios-admin"></div>
-            <button onclick="fecharPainelDono()" class="btn-system" style="background: #444; color: white;">Fechar</button>
+    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index:20000; padding:20px; overflow-y:auto;">
+        <div class="glass-section" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--primary);">
+            <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 20px;">💎 PAINEL DO DONO</h2>
+            <div id="lista-usuarios-admin" style="margin-bottom: 20px;"></div>
+            <button onclick="fecharPainelDono()" class="btn-system" style="background: var(--primary-dark); color: white; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; border: none; box-shadow: var(--shadow-up);">Fechar Painel</button>
         </div>
     </div>
 
@@ -153,62 +40,61 @@
         </div>
 
     <div id="app-content" style="display: none;">
-        <header style="background: white; padding: 15px 0; border-bottom: 1px solid #eee; margin-bottom: 20px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 900px; margin: 0 auto; width: 100%; padding: 0 20px;">
-                <h1 style="margin:0; font-size: 1.2rem; color: var(--dark);">BATE-CONTROLE 🤩</h1>
-                <button onclick="fazerLogout()" style="background: #eee; border:none; padding: 8px 15px; border-radius: 8px; font-size: 0.8rem; font-weight: bold;">Sair</button>
+        <header style="background: var(--bg-body); padding: 15px 0; box-shadow: var(--shadow-up); margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 850px; margin: 0 auto; width: 100%; padding: 0 20px;">
+                <h1 style="margin:0; font-size: 1.2rem; color: var(--primary); font-weight: 900;">BATE-CONTROLE 🤩</h1>
+                <button onclick="fazerLogout()" class="btn-acao-grande" style="font-size: 0.8rem !important; width: auto; padding: 0 15px !important;">Sair</button>
             </div>
         </header>
 
-        <main style="max-width: 900px; margin: 0 auto; padding: 0 15px 50px 15px;">
-            
+        <main>
             <section id="resumo-financeiro">
                 <div class="card-resumo"><span>Componentes</span><h4 id="total-componentes">0</h4></div>
                 <div class="card-resumo"><span>Meta Final</span><h4 id="meta-total">R$ 0</h4></div>
-                <div class="card-resumo" style="border-bottom-color: var(--success);"><span>Total Pago</span><h4 id="total-pago" style="color: var(--success);">R$ 0</h4></div>
-                <div class="card-resumo" style="border-bottom-color: var(--danger);"><span>Restante</span><h4 id="total-devedor" style="color: var(--danger);">R$ 0</h4></div>
+                <div class="card-resumo" style="border-top-color: var(--success);"><span>Total Pago</span><h4 id="total-pago" style="color: var(--success);">R$ 0</h4></div>
+                <div class="card-resumo" style="border-top-color: var(--danger);"><span>Restante</span><h4 id="total-devedor" style="color: var(--danger);">R$ 0</h4></div>
             </section>
 
-            <section class="glass-section" style="border-top: 4px solid var(--primary);">
-                <h3>📊 Custos Extras (Rateio)</h3>
-                <div style="display: flex; gap: 8px; margin-bottom: 15px;">
+            <section class="glass-section">
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">📊 Custos Extras (Rateio)</h3>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
                     <input type="text" id="descExtra" placeholder="Ex: Ônibus" style="flex: 2;">
                     <input type="number" id="valorExtra" placeholder="R$" style="flex: 1;">
-                    <button onclick="adicionarCustoExtra()" style="background:var(--primary); color:white; border:none; padding:0 20px; border-radius:10px; font-weight:bold;">+</button>
+                    <button onclick="adicionarCustoExtra()" class="btn-acao-grande" style="background: var(--primary); color: white;">+</button>
                 </div>
-                <ul id="listaExtras" style="padding:0; margin:0;"></ul>
-                <div style="margin-top:15px; padding-top:10px; border-top: 1px dashed #eee; font-weight:bold; color:var(--primary); font-size: 0.9rem; text-align: right;">
+                <ul id="listaExtras" style="padding:0; margin:0; list-style: none;"></ul>
+                <div style="margin-top:15px; padding:15px; border-radius: 12px; background: var(--bg-body); box-shadow: var(--shadow-down); font-weight:bold; color:var(--primary); font-size: 0.9rem; text-align: center;">
                     + R$ <span id="valorExtraPorPessoa">0,00</span> por pessoa
                 </div>
             </section>
 
             <section class="glass-section">
-                <h3>👤 Adicionar Componente</h3>
-                <div style="display: grid; gap: 10px;">
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">👤 Adicionar Componente</h3>
+                <div style="display: grid; gap: 5px;">
                     <input type="text" id="nome" placeholder="Nome Completo">
-                    <div style="display: flex; gap: 10px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
                         <input type="number" id="valorTotal" placeholder="Valor Fantasia (R$)">
                         <input type="text" id="telefone" placeholder="WhatsApp">
                     </div>
-                    <div style="background: #f9f9f9; padding: 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 0.8rem; color: #7f8c8d;">Vencimento:</span>
-                        <input type="date" id="dataVencimento" style="border:none; background:transparent; padding:0;">
+                    <div style="background: var(--bg-body); padding: 12px; border-radius: 14px; box-shadow: var(--shadow-down); display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <span style="font-size: 0.8rem; color: var(--text-main); font-weight: bold;">Vencimento:</span>
+                        <input type="date" id="dataVencimento" style="border:none; background:transparent; padding:0; box-shadow: none; margin-bottom: 0;">
                     </div>
-                    <button id="btn-cadastrar" onclick="adicionarComponente()" style="background:var(--dark); color:white; border:none; padding:15px; border-radius:12px; font-weight:bold; margin-top:5px;">Salvar no Banco</button>
+                    <button id="btn-cadastrar" onclick="adicionarComponente()">Salvar no Banco</button>
                 </div>
             </section>
 
-            <div style="margin: 30px 0 10px 0;">
-                <input type="text" id="buscaNome" placeholder="🔍 Buscar por nome..." onkeyup="atualizarTabela()" style="margin-bottom: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
-                <div style="display: flex; gap: 8px;">
-                    <button onclick="filtrar('todos')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd; background:white;">Todos</button>
-                    <button onclick="filtrar('atrasado')" style="flex:1; padding:10px; border-radius:8px; border:none; background:#fff1f0; color:var(--danger); font-weight:bold;">Atrasados</button>
-                    <button onclick="filtrar('em-dia')" style="flex:1; padding:10px; border-radius:8px; border:none; background:#f6ffed; color:var(--success); font-weight:bold;">Em Dia</button>
+            <div style="margin-bottom: 25px;">
+                <input type="text" id="buscaNome" placeholder="🔍 Buscar por nome..." onkeyup="atualizarTabela()">
+                <div style="display: flex; gap: 10px;">
+                    <button onclick="filtrar('todos')" class="btn-acao-grande" style="flex:1; font-size: 0.9rem !important;">Todos</button>
+                    <button onclick="filtrar('atrasado')" class="btn-acao-grande" style="flex:1; color: var(--danger); font-size: 0.9rem !important;">Atrasados</button>
+                    <button onclick="filtrar('em-dia')" class="btn-acao-grande" style="flex:1; color: var(--success); font-size: 0.9rem !important;">Em Dia</button>
                 </div>
             </div>
 
             <button onclick="avisarVencimentosAmanha()" class="btn-avisar-vencimentos">
-                <span>📢</span> AVISAR VENCIMENTOS DE AMANHÃ
+                📢 AVISAR VENCIMENTOS DE AMANHÃ
             </button>
 
             <div class="overflow-x-auto">
@@ -219,16 +105,16 @@
                             <th>Total</th> 
                             <th>Pago</th>  
                             <th>Saldo</th>
-                            <th>Ações</th>
+                            <th style="text-align: center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="corpoTabela"></tbody>
                 </table>
             </div>
 
-            <div style="margin-top: 30px; display: grid; gap: 10px;">
-                <button onclick="gerarRelatorioPDF()" class="btn-system btn-pdf">📄 Baixar Relatório PDF</button>
-                <button onclick="zerarTemporada()" class="btn-system btn-zerar">🔄 Zerar Temporada (Limpar Tudo)</button>
+            <div style="margin-top: 30px; display: grid; gap: 15px;">
+                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar" style="background: var(--primary-dark);">📄 Baixar Relatório PDF</button>
+                <button onclick="zerarTemporada()" id="btn-login-entrar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6;">🔄 Zerar Temporada (Limpar Tudo)</button>
             </div>
 
         </main>
