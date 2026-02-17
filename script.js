@@ -11,7 +11,7 @@ const TABELA_USUARIOS = 'batecontroleusers';
 // CONFIGURAÇÕES DE VENDA (SaaS)
 // ==========================================
 const DIAS_TRIAL = 15; 
-const VALOR_MENSALIDADE = 69.90; 
+const VALOR_MENSALIDADE = 79.90; 
 const MEU_PIX = "(21) 98507-2328"; 
 const WHATSAPP_DONO = "5521985072328"; 
 
@@ -109,26 +109,46 @@ async function executarAcaoPrincipal() {
 }
 
 // ==========================================
-// 2. PAINEL DO DONO (ADMIN) - AJUSTADO 3D
+// 2. PAINEL DO DONO (ADMIN) - ATUALIZADO COM ESTATÍSTICAS MASTER
 // ==========================================
 async function renderizarUsuariosAdmin() {
     let { data: usuarios } = await supabaseInstance.from(TABELA_USUARIOS).select('*');
     const lista = document.getElementById('lista-usuarios-admin');
     const inputBusca = document.getElementById('busca-admin');
     const termo = inputBusca ? inputBusca.value.toLowerCase() : "";
+    
+    // Contadores para o seu Painel Master
+    let contPagas = 0;
+    let contGratis = 0;
+    let contAtraso = 0;
     let lucroTotal = 0;
+    
     lista.innerHTML = "";
 
     if(usuarios) {
         usuarios.forEach(u => {
-            if (u.status === 'pago') lucroTotal += VALOR_MENSALIDADE;
+            // Lógica de contagem para estatísticas master
+            const hoje = new Date();
+            const dataCadastro = new Date(u.criacao);
+            const diasUso = Math.floor((hoje - dataCadastro) / (1000 * 60 * 60 * 24));
+
+            if (u.status === 'pago') {
+                contPagas++;
+                lucroTotal += VALOR_MENSALIDADE;
+            } else if (u.status === 'gratis' && diasUso <= DIAS_TRIAL) {
+                contGratis++;
+            } else if (u.status === 'gratis' && diasUso > DIAS_TRIAL) {
+                contAtraso++;
+            }
+
+            // Renderização da lista com busca
             if (u.user.toLowerCase().includes(termo)) {
-                const corStatus = u.status === 'pago' ? 'var(--success)' : 'var(--primary)';
+                const corStatus = u.status === 'pago' ? 'var(--success)' : (diasUso > DIAS_TRIAL ? 'var(--danger)' : 'var(--primary)');
                 lista.innerHTML += `
                     <div class="card-resumo" style="margin-bottom:15px; border-top: none; border-left: 6px solid ${corStatus}; text-align: left; display: flex; justify-content: space-between; align-items: center;">
                         <div>
                             <p style="margin:0;"><strong>Turma:</strong> ${u.user.toUpperCase()}</p>
-                            <p style="font-size:0.75rem; color:var(--text-main); opacity:0.7;">Status: ${u.status.toUpperCase()}</p>
+                            <p style="font-size:0.75rem; color:var(--text-main); opacity:0.7;">Status: ${u.status.toUpperCase()} (${diasUso} dias)</p>
                         </div>
                         <div style="display:flex; gap:8px;">
                             <button onclick="liberarAcesso('${u.user}')" class="btn-acao-grande" style="color:var(--success);">✅</button>
@@ -137,12 +157,14 @@ async function renderizarUsuariosAdmin() {
                     </div>`;
             }
         });
+
+        // Preencher os novos campos de estatísticas do HTML
+        if(document.getElementById('master-total-turmas')) document.getElementById('master-total-turmas').innerText = usuarios.length;
+        if(document.getElementById('master-faturamento')) document.getElementById('master-faturamento').innerText = `R$ ${lucroTotal.toFixed(2)}`;
+        if(document.getElementById('master-pagas')) document.getElementById('master-pagas').innerText = contPagas;
+        if(document.getElementById('master-gratis')) document.getElementById('master-gratis').innerText = contGratis;
+        if(document.getElementById('master-atraso')) document.getElementById('master-atraso').innerText = contAtraso;
     }
-    // Adicione esses elementos ao seu HTML do painel se quiser ver os totais
-    const totalTurmasEl = document.getElementById('admin-total-turmas');
-    const lucroTotalEl = document.getElementById('admin-lucro-total');
-    if(totalTurmasEl) totalTurmasEl.innerText = usuarios ? usuarios.length : 0;
-    if(lucroTotalEl) lucroTotalEl.innerText = `R$ ${lucroTotal.toFixed(2)}`;
 }
 
 async function liberarAcesso(nome) {
@@ -160,7 +182,6 @@ async function deletarUsuarioAdmin(nome) {
 function acessarPainelDono() { 
     const painel = document.getElementById('painel-dono');
     painel.style.display = 'block';
-    // Adiciona busca dinâmica se não existir no HTML
     const lista = document.getElementById('lista-usuarios-admin');
     if(!document.getElementById('busca-admin')){
         lista.insertAdjacentHTML('beforebegin', '<input type="text" id="busca-admin" placeholder="🔍 Filtrar turmas..." onkeyup="renderizarUsuariosAdmin()" style="margin-bottom:15px;">');
@@ -171,7 +192,7 @@ function acessarPainelDono() {
 function fecharPainelDono() { document.getElementById('painel-dono').style.display = 'none'; atualizarVisualizacao(); }
 
 // ==========================================
-// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL)
+// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL) - PRESERVADA
 // ==========================================
 let componentes = [], custosExtras = [], filtroAtual = 'todos';
 
