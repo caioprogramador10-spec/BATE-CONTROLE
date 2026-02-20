@@ -100,6 +100,23 @@
             </section>
 
             <section class="glass-section">
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">🛍️ Compras & Materiais (Delegados)</h3>
+                <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
+                    <span style="font-size: 0.8rem; color: #c53030; font-weight: bold; text-transform: uppercase;">Total Investido em Materiais</span>
+                    <h3 style="margin: 5px 0 0; color: var(--danger);">R$ <span id="total-gastos-manuais">0,00</span></h3>
+                </div>
+                <div style="display: grid; gap: 10px; margin-bottom: 15px;">
+                    <input type="text" id="gasto-item" placeholder="O que comprou? (Ex: Pano, Glitter)">
+                    <div style="display: flex; gap: 10px;">
+                        <input type="number" id="gasto-valor" placeholder="Valor (R$)" style="flex: 1;">
+                        <input type="text" id="gasto-delegado" placeholder="Quem comprou?" style="flex: 2;">
+                    </div>
+                    <button onclick="adicionarGastoManual()" class="btn-acao-grande" style="background: var(--primary-dark); color: white; width: 100%;">REGISTRAR COMPRA 📝</button>
+                </div>
+                <div id="lista-gastos-manuais"></div>
+            </section>
+
+            <section class="glass-section">
                 <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">👤 Adicionar Componente</h3>
                 <div style="display: grid; gap: 5px;">
                     <input type="text" id="nome" placeholder="Nome Completo">
@@ -144,8 +161,8 @@
             </div>
 
             <div style="margin-top: 30px; display: grid; gap: 15px;">
-                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar" style="background: var(--primary-dark); font-weight: bold;">📄 Baixar Relatório PDF</button>
-                <button onclick="zerarTemporada()" id="btn-login-entrar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6;">🔄 Zerar Temporada (Limpar Tudo)</button>
+                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar-pdf" style="background: var(--primary-dark); font-weight: bold; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer;">📄 Baixar Relatório PDF</button>
+                <button onclick="zerarTemporada()" id="btn-login-entrar-zerar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6; padding: 15px; border-radius: 10px; cursor: pointer;">🔄 Zerar Temporada (Limpar Tudo)</button>
             </div>
 
         </main>
