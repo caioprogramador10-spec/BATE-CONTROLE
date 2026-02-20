@@ -28,34 +28,46 @@
         </div>
     </section>
 
-    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); backdrop-filter: blur(8px); z-index:20000; padding:20px; overflow-y:auto;">
-        <div class="glass-section" style="max-width: 500px; margin: 40px auto; border-top: 5px solid var(--primary);">
-            <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 20px;">💎 PAINEL DO DONO</h2>
+    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index:20000; padding:20px; overflow-y:auto;">
+        <div class="glass-section" style="max-width: 600px; margin: 40px auto; border-top: 5px solid var(--primary); background: white; border-radius: 20px; padding: 20px;">
+            <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 10px;">💎 GESTÃO MASTER</h2>
+            <p style="text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 20px;">Controle de Pagamentos e Turmas</p>
             
             <div id="estatisticas-master" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
-                <div style="background: var(--bg-body); padding: 15px; border-radius: 15px; box-shadow: var(--shadow-down); text-align: center;">
-                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Turmas</span>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
+                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Total de Turmas</span>
                     <h3 id="master-total-turmas" style="margin: 5px 0 0; color: var(--primary);">0</h3>
                 </div>
-                <div style="background: var(--bg-body); padding: 15px; border-radius: 15px; box-shadow: var(--shadow-down); text-align: center;">
-                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Receita</span>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
+                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Previsão p/ Mês</span>
                     <h3 id="master-faturamento" style="margin: 5px 0 0; color: var(--success);">R$ 0</h3>
-                </div>
-                <div style="grid-column: span 2; background: var(--bg-body); padding: 15px; border-radius: 15px; box-shadow: var(--shadow-down);">
-                    <div style="display: flex; justify-content: space-around; font-size: 0.8rem; font-weight: bold;">
-                        <div style="text-align: center; color: var(--success);">Pagas: <span id="master-pagas">0</span></div>
-                        <div style="text-align: center; color: #e67e22;">Grátis: <span id="master-gratis">0</span></div>
-                        <div style="text-align: center; color: var(--danger);">Atraso: <span id="master-atraso">0</span></div>
-                    </div>
                 </div>
             </div>
 
-            <div id="lista-usuarios-admin" style="margin-bottom: 20px;"></div>
-            <button onclick="fecharPainelDono()" class="btn-system" style="background: var(--primary-dark); color: white; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; border: none; box-shadow: var(--shadow-up);">Fechar Painel</button>
+            <div id="lista-usuarios-admin" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; padding: 5px;">
+                </div>
+
+            <button onclick="fecharPainelDono()" class="btn-system" style="background: #333; color: white; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; border: none; cursor: pointer;">Fechar Painel Master</button>
         </div>
     </div>
 
-    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#1a1a1a; z-index:15000; color:white; text-align:center; padding:40px;">
+    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:25000; color:white; text-align:center; padding:40px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h1 style="font-size: 3rem;">🤡</h1>
+        <h2 style="color: var(--primary); font-weight: 900; margin-bottom: 10px;">ACESSO BLOQUEADO</h2>
+        <p id="mensagem-bloqueio" style="font-size: 1.1rem; line-height: 1.5; max-width: 300px; margin-bottom: 30px;">
+            Sua mensalidade venceu! Para continuar organizando sua turma e evitar calotes, realize o pagamento.
+        </p>
+        
+        <div style="background: #222; padding: 20px; border-radius: 20px; border: 2px dashed var(--primary); width: 100%; max-width: 300px;">
+            <p style="font-size: 0.8rem; text-transform: uppercase; color: #aaa; margin-bottom: 5px;">Valor da Mensalidade</p>
+            <h2 style="color: var(--success); margin-bottom: 15px;">R$ 79,90</h2>
+            <p style="font-size: 0.9rem; margin-bottom: 5px;">Chave PIX (E-mail):</p>
+            <strong style="color: var(--primary); font-size: 1rem;">seuemail@aqui.com</strong>
+        </div>
+
+        <p style="margin-top: 30px; font-size: 0.9rem; color: #888;">Após pagar, envie o comprovante para o suporte liberar seu acesso.</p>
+        
+        <button onclick="fazerLogout()" class="btn-system" style="margin-top: 20px; background: transparent; border: 1px solid #444; color: #888; padding: 10px 20px; border-radius: 10px;">Sair da Conta</button>
     </div>
 
     <div id="app-content" style="display: none;">
@@ -132,7 +144,7 @@
             </div>
 
             <div style="margin-top: 30px; display: grid; gap: 15px;">
-                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar" style="background: var(--primary-dark);">📄 Baixar Relatório PDF</button>
+                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar" style="background: var(--primary-dark); font-weight: bold;">📄 Baixar Relatório PDF</button>
                 <button onclick="zerarTemporada()" id="btn-login-entrar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6;">🔄 Zerar Temporada (Limpar Tudo)</button>
             </div>
 
