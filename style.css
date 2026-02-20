@@ -30,6 +30,9 @@ body {
     color: var(--text-main);
     overflow-x: hidden;
     line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Garante centralização global */
 }
 
 /* --- TELA DE LOGIN (CENTRALIZAÇÃO TOTAL) --- */
@@ -58,6 +61,7 @@ body {
 
 /* --- CONTEÚDO PRINCIPAL --- */
 main { 
+    width: 100%;
     max-width: 850px; margin: 0 auto; padding: 15px; 
     animation: fadeInUp 0.6s ease-out;
 }
@@ -89,14 +93,13 @@ main {
     background: var(--bg-body);
     padding: 20px 15px; border-radius: var(--radius-lg);
     box-shadow: var(--shadow-up); margin-bottom: 25px;
-    z-index: 500;
 }
 
 input, select { 
     width: 100%; padding: 16px; margin-bottom: 15px;
     border: none; border-radius: 14px; 
     background: var(--bg-body); box-shadow: var(--shadow-down);
-    font-size: 16px; /* Impede zoom no iOS */
+    font-size: 16px;
     font-weight: 600; color: var(--text-main);
     transition: 0.2s ease;
 }
@@ -104,14 +107,30 @@ input, select {
 input:focus {
     box-shadow: var(--shadow-up);
     transform: translateY(-2px);
+    outline: none;
 }
 
-/* --- TABELA RESPONSIVA COM CORES DE STATUS --- */
+/* --- LISTA DE GASTOS / MATERIAIS --- */
+.item-gasto {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--bg-body);
+    padding: 12px 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    box-shadow: var(--shadow-up);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+/* --- TABELA RESPONSIVA --- */
 .overflow-x-auto {
     background: var(--bg-body); border-radius: var(--radius-lg);
     padding: 10px; box-shadow: var(--shadow-up);
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    width: 100%;
 }
 
 table { width: 100%; min-width: 450px; border-spacing: 0 10px; border-collapse: separate; }
@@ -122,12 +141,11 @@ td {
     font-weight: 600;
 }
 
-/* Bordas de status para dar vida à tabela */
 .bg-ok td { border-left: 5px solid var(--success); color: #166534; }
 .bg-atrasado td { border-left: 5px solid var(--danger); color: #991b1b; }
 
-/* --- BOTÕES 3D DE ALTO IMPACTO --- */
-#btn-login-entrar, #btn-cadastrar, .btn-avisar-vencimentos {
+/* --- BOTÕES 3D --- */
+#btn-login-entrar, #btn-cadastrar, .btn-avisar-vencimentos, #btn-pdf, #btn-zerar {
     width: 100%; padding: 18px; border-radius: 16px; border: none;
     font-weight: 800; text-transform: uppercase; cursor: pointer;
     transition: 0.1s;
@@ -153,13 +171,11 @@ td {
     margin: 4px; font-size: 1.3rem; color: var(--primary);
 }
 
-/* --- FEEDBACK DE CLIQUE --- */
 button:active, .btn-acao-grande:active {
     transform: translateY(4px) scale(0.96);
-    box-shadow: 0 2px 0 inherit !important;
 }
 
-/* --- AJUSTES PARA TELAS PEQUENAS (RESPONSIVIDADE) --- */
+/* --- RESPONSIVIDADE --- */
 @media (max-width: 480px) {
     main { padding: 10px; }
     #resumo-financeiro { grid-template-columns: 1fr; }
@@ -169,46 +185,10 @@ button:active, .btn-acao-grande:active {
 }
 
 /* ==========================================
-   ESTILOS EXCLUSIVOS DO PAINEL MASTER E BLOQUEIO
+   PAINEL MASTER E BLOQUEIO
    ========================================== */
+#painel-dono .glass-section { box-shadow: 0 20px 40px rgba(0,0,0,0.4); }
 
-/* Garante que o painel administrativo tenha profundidade */
-#painel-dono .glass-section {
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-}
-
-/* Tela de bloqueio impactante */
 #bloqueio-assinatura {
     background: radial-gradient(circle at center, #222 0%, #000 100%) !important;
-}
-
-#bloqueio-assinatura .glass-section {
-    background: #1a1a1a;
-    color: white;
-    border: 1px solid #333;
-}
-
-#estatisticas-master div {
-    transition: transform 0.3s ease;
-    border: 1px solid rgba(163, 177, 198, 0.2);
-}
-
-#estatisticas-master h3 {
-    font-size: 1.4rem;
-    font-weight: 900;
-}
-
-/* Estilo do campo de busca no painel administrativo */
-#busca-admin {
-    margin-top: 10px;
-    background: var(--bg-body);
-    box-shadow: var(--shadow-down);
-    border: 1px solid rgba(255,255,255,0.3);
-}
-
-/* Botão de renovação +30 dias */
-button[title="Renovar +30 Dias"] {
-    box-shadow: 0 4px 0 #008f4f !important;
-    font-size: 0.7rem;
-    text-transform: uppercase;
 }
