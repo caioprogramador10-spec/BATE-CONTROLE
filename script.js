@@ -132,9 +132,6 @@ async function renderizarUsuariosAdmin() {
     const inputBusca = document.getElementById('busca-admin');
     const termo = inputBusca ? inputBusca.value.toLowerCase() : "";
     
-    let contPagas = 0;
-    let contGratis = 0;
-    let contAtraso = 0;
     let lucroTotal = 0;
     
     lista.innerHTML = "";
@@ -146,12 +143,7 @@ async function renderizarUsuariosAdmin() {
             const expirado = hoje > expira;
 
             if (!expirado && u.status === 'pago') {
-                contPagas++;
                 lucroTotal += VALOR_MENSALIDADE;
-            } else if (!expirado && u.status === 'gratis') {
-                contGratis++;
-            } else if (expirado) {
-                contAtraso++;
             }
 
             if (u.user.toLowerCase().includes(termo)) {
@@ -285,6 +277,7 @@ async function zerarTemporada() {
     try {
         await supabaseInstance.from('extras').delete().eq('turma_id', usuarioLogado.user);
         await supabaseInstance.from('componentes').update({ valor_pago: 0 }).eq('turma_id', usuarioLogado.user);
+        await supabaseInstance.from('gastos_manuais').delete().eq('turma_id', usuarioLogado.user);
         alert("Temporada zerada com sucesso! 🤡");
         await atualizarTabela();
     } catch (e) {
@@ -292,9 +285,6 @@ async function zerarTemporada() {
     }
 }
 
-/* ==========================================
-   FUNÇÃO CORRIGIDA: AVISAR VENCIMENTOS AMANHÃ
-   ========================================== */
 async function avisarVencimentosAmanha() {
     const hoje = new Date();
     const amanha = new Date(hoje);
@@ -328,6 +318,8 @@ async function avisarVencimentosAmanha() {
 
 async function atualizarTabela() {
     await carregarDadosUsuario();
+    await carregarGastosManuais();
+    
     const rateio = atualizarResumo();
     const corpo = document.getElementById('corpoTabela');
     if(!corpo) return;
@@ -407,6 +399,63 @@ async function gerarRelatorioPDF() {
 function filtrar(t) { filtroAtual = t; atualizarTabela(); }
 function fazerLogout() { localStorage.removeItem('bateControleSessao'); window.location.reload(); }
 function alternarTelaLogin() { modoCadastro = !modoCadastro; document.getElementById('login-titulo').innerText = modoCadastro ? "NOVA TURMA 🎭" : "BATE-LOGIN 🤡"; }
-function avisarPagamento() { window.open(`https://api.whatsapp.com/send?phone=${WHATSAPP_DONO}&text=Fiz o PIX para a turma ${usuarioLogado.user}!`); }
+
+async function adicionarGastoManual() {
+    const item = document.getElementById('gasto-item').value;
+    const valor = parseFloat(document.getElementById('gasto-valor').value);
+    const responsavel = document.getElementById('gasto-delegado').value;
+
+    if (!item || isNaN(valor) || !responsavel) return alert("Preencha todos os campos da compra!");
+
+    const novoGasto = {
+        turma_id: usuarioLogado.user,
+        item: item,
+        valor: valor,
+        responsavel: responsavel
+    };
+
+    const { error } = await supabaseInstance.from('gastos_manuais').insert([novoGasto]);
+
+    if (error) {
+        alert("Erro ao salvar gasto.");
+    } else {
+        document.getElementById('gasto-item').value = '';
+        document.getElementById('gasto-valor').value = '';
+        document.getElementById('gasto-delegado').value = '';
+        await carregarGastosManuais();
+    }
+}
+
+async function carregarGastosManuais() {
+    if(!usuarioLogado) return;
+    const { data: gastos } = await supabaseInstance
+        .from('gastos_manuais')
+        .select('*')
+        .eq('turma_id', usuarioLogado.user);
+
+    const lista = document.getElementById('lista-gastos-manuais');
+    if (!lista) return;
+
+    const totalGeralGastos = (gastos || []).reduce((acc, g) => acc + (g.valor || 0), 0);
+    const campoTotal = document.getElementById('total-gastos-manuais');
+    if (campoTotal) campoTotal.innerText = totalGeralGastos.toFixed(2);
+
+    lista.innerHTML = (gastos || []).map(g => `
+        <div class="card-resumo" style="margin-bottom:8px; text-align:left; border-left:4px solid var(--primary-dark); padding:10px; background: #fff; box-shadow: var(--shadow-down);">
+            <p style="margin:0; font-weight:bold; color: var(--primary-dark);">🛍️ ${g.item.toUpperCase()}</p>
+            <p style="margin:0; font-size:0.85rem;">Valor: <strong>R$ ${g.valor.toFixed(2)}</strong></p>
+            <p style="margin:0; font-size:0.75rem; color: #666;">👤 Responsável: ${g.responsavel}</p>
+            <button onclick="removerGastoManual('${g.id}')" style="background:none; border:none; float:right; cursor:pointer; color: var(--danger); font-weight: bold; margin-top: -20px;">🗑️</button>
+            <div style="clear:both;"></div>
+        </div>
+    `).join('');
+}
+
+async function removerGastoManual(id) {
+    if(confirm("Deseja apagar esse registro de compra?")) {
+        await supabaseInstance.from('gastos_manuais').delete().eq('id', id);
+        await carregarGastosManuais();
+    }
+}
 
 window.onload = atualizarVisualizacao;
