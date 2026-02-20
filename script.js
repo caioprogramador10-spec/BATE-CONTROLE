@@ -16,7 +16,7 @@ const MEU_PIX = "(21) 98507-2328";
 const WHATSAPP_DONO = "5521985072328"; 
 
 // ==========================================
-// 1. SISTEMA DE LOGIN E ASSINATURA
+// 1. SISTEMA DE LOGIN E ASSINATURA (ATUALIZADO)
 // ==========================================
 let usuarioLogado = JSON.parse(localStorage.getItem('bateControleSessao')) || null;
 let modoCadastro = false;
@@ -27,7 +27,8 @@ async function atualizarVisualizacao() {
     const bloqueioAssinatura = document.getElementById('bloqueio-assinatura');
 
     if (usuarioLogado) {
-        if (usuarioLogado.status === "admin") {
+        // Se for você (Admin), libera tudo
+        if (usuarioLogado.user === "caio") {
             loginContainer.style.display = 'none';
             appContent.style.display = 'block';
             if(bloqueioAssinatura) bloqueioAssinatura.style.display = 'none';
@@ -35,20 +36,13 @@ async function atualizarVisualizacao() {
             return;
         }
 
-        if (!verificarAssinatura()) {
+        // VERIFICAÇÃO DE ASSINATURA MELHORADA
+        const acessoValido = await verificarStatusAssinatura();
+
+        if (!acessoValido) {
             loginContainer.style.display = 'none';
             appContent.style.display = 'none';
-            bloqueioAssinatura.innerHTML = `
-                <div class="glass-section" style="border: 2px solid var(--danger); text-align:center; max-width:400px; margin: 40px auto; animation: fadeInUp 0.5s;">
-                    <h2 style="color:var(--danger)">Acesso Expirado! 🤡</h2>
-                    <p style="color:var(--text-main)">O período de teste da turma <strong>${usuarioLogado.user.toUpperCase()}</strong> chegou ao fim.</p>
-                    <hr style="border:0; border-top:1px solid #ddd; margin:20px 0;">
-                    <p style="font-size:1.1rem">Valor da Assinatura: <br><strong style="font-size:1.8rem; color:var(--success)">R$ ${VALOR_MENSALIDADE.toFixed(2)}</strong></p>
-                    <div style="background:var(--bg-body); padding:15px; border-radius:12px; margin:15px 0; box-shadow: var(--shadow-down);">Chave PIX: <br><strong>${MEU_PIX}</strong></div>
-                    <button onclick="avisarPagamento()" id="btn-cadastrar" style="background:var(--success); border:none; margin-bottom:10px;">✅ JÁ FIZ O PIX! LIBERAR ACESSO</button>
-                    <button onclick="fazerLogout()" style="background:transparent; color:#888; border:none; margin-top:10px; cursor:pointer; text-decoration:underline;">Sair da conta</button>
-                </div>`;
-            bloqueioAssinatura.style.display = 'block'; 
+            if(bloqueioAssinatura) bloqueioAssinatura.style.display = 'flex'; 
             return;
         }
         
@@ -63,12 +57,30 @@ async function atualizarVisualizacao() {
     }
 }
 
-function verificarAssinatura() {
-    if (usuarioLogado.status === "admin" || usuarioLogado.status === "pago") return true; 
+// Função que checa no banco se o tempo acabou
+async function verificarStatusAssinatura() {
+    // 1. Pega os dados mais frescos do banco
+    let { data: userDB, error } = await supabaseInstance
+        .from(TABELA_USUARIOS)
+        .select('*')
+        .eq('user', usuarioLogado.user)
+        .single();
+
+    if (error || !userDB) return false;
+
     const hoje = new Date();
-    const dataCadastro = new Date(usuarioLogado.criacao);
-    const diasUso = Math.floor((hoje - dataCadastro) / (1000 * 60 * 60 * 24));
-    return !(usuarioLogado.status === "gratis" && diasUso > DIAS_TRIAL);
+    
+    // Se você já criou a coluna 'data_expiracao', use ela. 
+    // Se não, o código abaixo usa a 'criacao' + 15 dias como padrão inicial.
+    let dataLimite;
+    if (userDB.data_expiracao) {
+        dataLimite = new Date(userDB.data_expiracao);
+    } else {
+        dataLimite = new Date(userDB.criacao);
+        dataLimite.setDate(dataLimite.getDate() + DIAS_TRIAL);
+    }
+
+    return hoje <= dataLimite;
 }
 
 async function executarAcaoPrincipal() {
@@ -89,10 +101,21 @@ async function executarAcaoPrincipal() {
 
         if (modoCadastro) {
             if (usuarios && usuarios.find(u => u.user === user)) return alert("Essa turma já existe!");
-            const novo = { user: user, pass: pass, criacao: new Date().toISOString(), status: "gratis" };
+            
+            // Define data de expiração inicial (Hoje + 15 dias)
+            const expiraInicial = new Date();
+            expiraInicial.setDate(expiraInicial.getDate() + DIAS_TRIAL);
+
+            const novo = { 
+                user: user, 
+                pass: pass, 
+                criacao: new Date().toISOString(), 
+                data_expiracao: expiraInicial.toISOString(),
+                status: "gratis" 
+            };
             const { error: insErr } = await supabaseInstance.from(TABELA_USUARIOS).insert([novo]);
             if (insErr) throw insErr;
-            alert(`Turma ${user.toUpperCase()} cadastrada!`);
+            alert(`Turma ${user.toUpperCase()} cadastrada! Você tem 15 dias grátis.`);
             alternarTelaLogin();
         } else {
             const valid = usuarios.find(u => u.user === user && u.pass === pass);
@@ -109,7 +132,7 @@ async function executarAcaoPrincipal() {
 }
 
 // ==========================================
-// 2. PAINEL DO DONO (ADMIN) - ATUALIZADO COM ESTATÍSTICAS MASTER
+// 2. PAINEL DO DONO (ADMIN) - FUNÇÃO DE RENOVAÇÃO ADICIONADA
 // ==========================================
 async function renderizarUsuariosAdmin() {
     let { data: usuarios } = await supabaseInstance.from(TABELA_USUARIOS).select('*');
@@ -117,7 +140,6 @@ async function renderizarUsuariosAdmin() {
     const inputBusca = document.getElementById('busca-admin');
     const termo = inputBusca ? inputBusca.value.toLowerCase() : "";
     
-    // Contadores para o seu Painel Master
     let contPagas = 0;
     let contGratis = 0;
     let contAtraso = 0;
@@ -127,49 +149,62 @@ async function renderizarUsuariosAdmin() {
 
     if(usuarios) {
         usuarios.forEach(u => {
-            // Lógica de contagem para estatísticas master
             const hoje = new Date();
-            const dataCadastro = new Date(u.criacao);
-            const diasUso = Math.floor((hoje - dataCadastro) / (1000 * 60 * 60 * 24));
+            const expira = u.data_expiracao ? new Date(u.data_expiracao) : new Date(new Date(u.criacao).getTime() + (DIAS_TRIAL * 24 * 60 * 60 * 1000));
+            const expirado = hoje > expira;
 
-            if (u.status === 'pago') {
+            if (!expirado && u.status === 'pago') {
                 contPagas++;
                 lucroTotal += VALOR_MENSALIDADE;
-            } else if (u.status === 'gratis' && diasUso <= DIAS_TRIAL) {
+            } else if (!expirado && u.status === 'gratis') {
                 contGratis++;
-            } else if (u.status === 'gratis' && diasUso > DIAS_TRIAL) {
+            } else if (expirado) {
                 contAtraso++;
             }
 
-            // Renderização da lista com busca
             if (u.user.toLowerCase().includes(termo)) {
-                const corStatus = u.status === 'pago' ? 'var(--success)' : (diasUso > DIAS_TRIAL ? 'var(--danger)' : 'var(--primary)');
+                const corStatus = expirado ? 'var(--danger)' : (u.status === 'pago' ? 'var(--success)' : 'var(--primary)');
                 lista.innerHTML += `
-                    <div class="card-resumo" style="margin-bottom:15px; border-top: none; border-left: 6px solid ${corStatus}; text-align: left; display: flex; justify-content: space-between; align-items: center;">
+                    <div class="card-resumo" style="margin-bottom:10px; border-left: 6px solid ${corStatus}; display: flex; justify-content: space-between; align-items: center; background:#f9f9f9; padding:10px;">
                         <div>
-                            <p style="margin:0;"><strong>Turma:</strong> ${u.user.toUpperCase()}</p>
-                            <p style="font-size:0.75rem; color:var(--text-main); opacity:0.7;">Status: ${u.status.toUpperCase()} (${diasUso} dias)</p>
+                            <p style="margin:0; font-size:0.9rem;"><strong>${u.user.toUpperCase()}</strong></p>
+                            <p style="font-size:0.7rem; color:#666;">Expira em: ${expira.toLocaleDateString('pt-BR')}</p>
                         </div>
-                        <div style="display:flex; gap:8px;">
-                            <button onclick="liberarAcesso('${u.user}')" class="btn-acao-grande" style="color:var(--success);">✅</button>
-                            <button onclick="deletarUsuarioAdmin('${u.user}')" class="btn-acao-grande" style="color:var(--danger);">🗑️</button>
+                        <div style="display:flex; gap:5px;">
+                            <button onclick="renovarTurma('${u.user}')" title="Renovar +30 Dias" style="background:var(--success); border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">+30d</button>
+                            <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
                         </div>
                     </div>`;
             }
         });
 
-        // Preencher os novos campos de estatísticas do HTML
-        if(document.getElementById('master-total-turmas')) document.getElementById('master-total-turmas').innerText = usuarios.length;
-        if(document.getElementById('master-faturamento')) document.getElementById('master-faturamento').innerText = `R$ ${lucroTotal.toFixed(2)}`;
-        if(document.getElementById('master-pagas')) document.getElementById('master-pagas').innerText = contPagas;
-        if(document.getElementById('master-gratis')) document.getElementById('master-gratis').innerText = contGratis;
-        if(document.getElementById('master-atraso')) document.getElementById('master-atraso').innerText = contAtraso;
+        document.getElementById('master-total-turmas').innerText = usuarios.length;
+        document.getElementById('master-faturamento').innerText = `R$ ${lucroTotal.toFixed(2)}`;
     }
 }
 
-async function liberarAcesso(nome) {
-    await supabaseInstance.from(TABELA_USUARIOS).update({ status: 'pago' }).eq('user', nome);
-    renderizarUsuariosAdmin();
+// FUNÇÃO CHAVE: ADICIONA 30 DIAS À TURMA
+async function renovarTurma(nomeTurma) {
+    if(!confirm(`Deseja renovar a turma ${nomeTurma.toUpperCase()} por mais 30 dias?`)) return;
+
+    // Calcula Hoje + 30 dias
+    const novaData = new Date();
+    novaData.setDate(novaData.getDate() + 30);
+
+    const { error } = await supabaseInstance
+        .from(TABELA_USUARIOS)
+        .update({ 
+            data_expiracao: novaData.toISOString(),
+            status: 'pago' 
+        })
+        .eq('user', nomeTurma);
+
+    if (error) {
+        alert("Erro ao renovar!");
+    } else {
+        alert("Turma renovada com sucesso! 🤡👊");
+        renderizarUsuariosAdmin();
+    }
 }
 
 async function deletarUsuarioAdmin(nome) {
@@ -180,11 +215,9 @@ async function deletarUsuarioAdmin(nome) {
 }
 
 function acessarPainelDono() { 
-    const painel = document.getElementById('painel-dono');
-    painel.style.display = 'block';
-    const lista = document.getElementById('lista-usuarios-admin');
+    document.getElementById('painel-dono').style.display = 'block';
     if(!document.getElementById('busca-admin')){
-        lista.insertAdjacentHTML('beforebegin', '<input type="text" id="busca-admin" placeholder="🔍 Filtrar turmas..." onkeyup="renderizarUsuariosAdmin()" style="margin-bottom:15px;">');
+        document.getElementById('lista-usuarios-admin').insertAdjacentHTML('beforebegin', '<input type="text" id="busca-admin" placeholder="🔍 Filtrar turmas..." onkeyup="renderizarUsuariosAdmin()" style="margin-bottom:10px; width:100%; padding:8px;">');
     }
     renderizarUsuariosAdmin(); 
 }
@@ -192,7 +225,7 @@ function acessarPainelDono() {
 function fecharPainelDono() { document.getElementById('painel-dono').style.display = 'none'; atualizarVisualizacao(); }
 
 // ==========================================
-// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL) - PRESERVADA
+// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL) - TOTALMENTE PRESERVADA
 // ==========================================
 let componentes = [], custosExtras = [], filtroAtual = 'todos';
 
