@@ -27,7 +27,6 @@ async function atualizarVisualizacao() {
     const bloqueioAssinatura = document.getElementById('bloqueio-assinatura');
 
     if (usuarioLogado) {
-        // Se for você (Admin), libera tudo
         if (usuarioLogado.user === "caio") {
             loginContainer.style.display = 'none';
             appContent.style.display = 'block';
@@ -36,7 +35,6 @@ async function atualizarVisualizacao() {
             return;
         }
 
-        // VERIFICAÇÃO DE ASSINATURA MELHORADA
         const acessoValido = await verificarStatusAssinatura();
 
         if (!acessoValido) {
@@ -57,9 +55,7 @@ async function atualizarVisualizacao() {
     }
 }
 
-// Função que checa no banco se o tempo acabou
 async function verificarStatusAssinatura() {
-    // 1. Pega os dados mais frescos do banco
     let { data: userDB, error } = await supabaseInstance
         .from(TABELA_USUARIOS)
         .select('*')
@@ -69,9 +65,6 @@ async function verificarStatusAssinatura() {
     if (error || !userDB) return false;
 
     const hoje = new Date();
-    
-    // Se você já criou a coluna 'data_expiracao', use ela. 
-    // Se não, o código abaixo usa a 'criacao' + 15 dias como padrão inicial.
     let dataLimite;
     if (userDB.data_expiracao) {
         dataLimite = new Date(userDB.data_expiracao);
@@ -102,7 +95,6 @@ async function executarAcaoPrincipal() {
         if (modoCadastro) {
             if (usuarios && usuarios.find(u => u.user === user)) return alert("Essa turma já existe!");
             
-            // Define data de expiração inicial (Hoje + 15 dias)
             const expiraInicial = new Date();
             expiraInicial.setDate(expiraInicial.getDate() + DIAS_TRIAL);
 
@@ -132,7 +124,7 @@ async function executarAcaoPrincipal() {
 }
 
 // ==========================================
-// 2. PAINEL DO DONO (ADMIN) - FUNÇÃO DE RENOVAÇÃO ADICIONADA
+// 2. PAINEL DO DONO (ADMIN)
 // ==========================================
 async function renderizarUsuariosAdmin() {
     let { data: usuarios } = await supabaseInstance.from(TABELA_USUARIOS).select('*');
@@ -183,11 +175,9 @@ async function renderizarUsuariosAdmin() {
     }
 }
 
-// FUNÇÃO CHAVE: ADICIONA 30 DIAS À TURMA
 async function renovarTurma(nomeTurma) {
     if(!confirm(`Deseja renovar a turma ${nomeTurma.toUpperCase()} por mais 30 dias?`)) return;
 
-    // Calcula Hoje + 30 dias
     const novaData = new Date();
     novaData.setDate(novaData.getDate() + 30);
 
@@ -225,7 +215,7 @@ function acessarPainelDono() {
 function fecharPainelDono() { document.getElementById('painel-dono').style.display = 'none'; atualizarVisualizacao(); }
 
 // ==========================================
-// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL) - TOTALMENTE PRESERVADA
+// 3. LÓGICA DO APP (FINANCEIRO INTEGRAL)
 // ==========================================
 let componentes = [], custosExtras = [], filtroAtual = 'todos';
 
@@ -302,23 +292,36 @@ async function zerarTemporada() {
     }
 }
 
+/* ==========================================
+   FUNÇÃO CORRIGIDA: AVISAR VENCIMENTOS AMANHÃ
+   ========================================== */
 async function avisarVencimentosAmanha() {
-    const amanha = new Date();
-    amanha.setDate(amanha.getDate() + 1);
-    const dataAmanhaStr = amanha.toISOString().split('T')[0];
-    const avisados = componentes.filter(c => c.vencimento === dataAmanhaStr);
+    const hoje = new Date();
+    const amanha = new Date(hoje);
+    amanha.setDate(hoje.getDate() + 1);
+    
+    const ano = amanha.getFullYear();
+    const mes = String(amanha.getMonth() + 1).padStart(2, '0');
+    const dia = String(amanha.getDate()).padStart(2, '0');
+    const dataAmanhaStr = `${ano}-${mes}-${dia}`;
+
+    const rateio = atualizarResumo();
+    const avisados = componentes.filter(c => {
+        const saldo = (c.valor_total + rateio) - c.valor_pago;
+        return c.vencimento === dataAmanhaStr && saldo > 0.1;
+    });
     
     if (avisados.length === 0) {
-        alert("Ninguém vence amanhã! 🎉");
+        alert("Ninguém vence amanhã ou todos já pagaram! 🎉");
         return;
     }
 
     if(confirm(`Enviar mensagem para ${avisados.length} pessoas que vencem amanhã?`)) {
         avisados.forEach((c, index) => {
             setTimeout(() => {
-                const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${c.vencimento.split('-').reverse().join('/')}).%0A%0A_Evite atrasos!_`;
+                const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${dia}/${mes}/${ano}).%0A%0A_Evite atrasos!_`;
                 window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
-            }, index * 1000); 
+            }, index * 1500); 
         });
     }
 }
