@@ -169,10 +169,28 @@ button:active, .btn-acao-grande:active {
 }
 
 /* ==========================================
-   ESTILOS EXCLUSIVOS DO PAINEL MASTER (NOVO)
+   ESTILOS EXCLUSIVOS DO PAINEL MASTER E BLOQUEIO
    ========================================== */
+
+/* Garante que o painel administrativo tenha profundidade */
+#painel-dono .glass-section {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+}
+
+/* Tela de bloqueio impactante */
+#bloqueio-assinatura {
+    background: radial-gradient(circle at center, #222 0%, #000 100%) !important;
+}
+
+#bloqueio-assinatura .glass-section {
+    background: #1a1a1a;
+    color: white;
+    border: 1px solid #333;
+}
+
 #estatisticas-master div {
     transition: transform 0.3s ease;
+    border: 1px solid rgba(163, 177, 198, 0.2);
 }
 
 #estatisticas-master h3 {
@@ -186,4 +204,11 @@ button:active, .btn-acao-grande:active {
     background: var(--bg-body);
     box-shadow: var(--shadow-down);
     border: 1px solid rgba(255,255,255,0.3);
+}
+
+/* Botão de renovação +30 dias */
+button[title="Renovar +30 Dias"] {
+    box-shadow: 0 4px 0 #008f4f !important;
+    font-size: 0.7rem;
+    text-transform: uppercase;
 }
