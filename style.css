@@ -84,6 +84,7 @@ main {
     display: grid; 
     grid-template-columns: repeat(2, 1fr); 
     gap: 12px; margin-bottom: 25px;
+    width: 100%; /* Garante que o grid não estoure */
 }
 
 .card-resumo { 
@@ -101,6 +102,7 @@ main {
     background: var(--bg-body);
     padding: 20px 15px; border-radius: var(--radius-lg);
     box-shadow: var(--shadow-up); margin-bottom: 25px;
+    width: 100%; /* Ocupa a largura disponível sem vazar */
 }
 
 input, select { 
@@ -186,7 +188,10 @@ button:active, .btn-acao-grande:active {
 /* --- RESPONSIVIDADE --- */
 @media (max-width: 480px) {
     main { padding: 10px; }
-    #resumo-financeiro { grid-template-columns: 1fr; }
+    /* Mantém 2 colunas no resumo, mas ajusta a fonte se necessário */
+    #resumo-financeiro { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .card-resumo h4 { font-size: 1rem; }
+    
     .login-box { padding: 30px 15px; }
     .btn-acao-grande { width: 44px; height: 44px; }
     td { padding: 12px 8px; font-size: 0.8rem; }
