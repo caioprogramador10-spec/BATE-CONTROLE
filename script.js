@@ -350,9 +350,10 @@ async function atualizarTabela() {
                 <td>${c.vencimento.split('-').reverse().join('/')}</td>
                 <td>
                     <div style="display:flex; gap:5px;">
-                        <button class="btn-acao-grande" onclick="registrarPagamento('${c.id}')">💸</button>
-                        <button class="btn-acao-grande" onclick="cobrarWhatsApp('${c.id}', ${saldo})">📱</button>
-                        <button class="btn-acao-grande" onclick="removerComponente('${c.id}')">❌</button>
+                        <button class="btn-acao-grande" title="Pagamento" onclick="registrarPagamento('${c.id}')">💸</button>
+                        <button class="btn-acao-grande" title="Editar Valor" onclick="editarValorFantasia('${c.id}')">✏️</button>
+                        <button class="btn-acao-grande" title="Cobrar" onclick="cobrarWhatsApp('${c.id}', ${saldo})">📱</button>
+                        <button class="btn-acao-grande" title="Remover" onclick="removerComponente('${c.id}')">❌</button>
                     </div>
                 </td>
             </tr>`;
@@ -455,6 +456,37 @@ async function removerGastoManual(id) {
     if(confirm("Deseja apagar esse registro de compra?")) {
         await supabaseInstance.from('gastos_manuais').delete().eq('id', id);
         await carregarGastosManuais();
+    }
+}
+
+async function editarValorFantasia(id) {
+    const comp = componentes.find(x => x.id == id);
+    const novoValor = parseFloat(prompt(`Novo valor da Fantasia para ${comp.nome}:`, comp.valor_total));
+    if (isNaN(novoValor)) return;
+    await supabaseInstance.from('componentes').update({ valor_total: novoValor }).eq('id', id);
+    await atualizarTabela();
+}
+
+/* ==========================================
+   NOVA FUNÇÃO: EDITAR VALOR GLOBAL (Massa)
+   ========================================== */
+async function editarValorGlobal() {
+    const novoValor = parseFloat(prompt("Digite o NOVO VALOR DA FANTASIA para TODOS os componentes:"));
+    
+    if (isNaN(novoValor)) return;
+
+    if(!confirm(`⚠️ ATENÇÃO: Deseja realmente alterar o valor de TODOS para R$ ${novoValor.toFixed(2)}?`)) return;
+
+    const { error } = await supabaseInstance
+        .from('componentes')
+        .update({ valor_total: novoValor })
+        .eq('turma_id', usuarioLogado.user);
+
+    if (error) {
+        alert("Erro ao atualizar valores em massa!");
+    } else {
+        alert("Todos os componentes foram atualizados com sucesso! 🤡👊");
+        await atualizarTabela();
     }
 }
 
