@@ -10,7 +10,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body>
+<body style="width: 100%; overflow-x: hidden;">
 
     <section id="login-container">
         <div class="login-box">
@@ -28,57 +28,54 @@
         </div>
     </section>
 
-    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index:20000; padding:20px; overflow-y:auto;">
-        <div class="glass-section" style="max-width: 600px; margin: 40px auto; border-top: 5px solid var(--primary); background: white; border-radius: 20px; padding: 20px;">
+    <div id="painel-dono" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); backdrop-filter: blur(8px); z-index:20000; padding:10px; overflow-y:auto;">
+        <div class="glass-section" style="width: 100%; max-width: 500px; margin: 20px auto; border-top: 5px solid var(--primary); background: white; border-radius: 20px; padding: 15px;">
             <h2 style="text-align: center; color: var(--primary-dark); margin-bottom: 10px;">💎 GESTÃO MASTER</h2>
             <p style="text-align: center; font-size: 0.8rem; color: #666; margin-bottom: 20px;">Controle de Pagamentos e Turmas</p>
             
             <div id="estatisticas-master" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 25px;">
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
-                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Total de Turmas</span>
-                    <h3 id="master-total-turmas" style="margin: 5px 0 0; color: var(--primary);">0</h3>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
+                    <span style="font-size: 0.6rem; color: #888; font-weight: bold; text-transform: uppercase;">Turmas</span>
+                    <h3 id="master-total-turmas" style="margin: 5px 0 0; color: var(--primary); font-size: 1.1rem;">0</h3>
                 </div>
-                <div style="background: #f8f9fa; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
-                    <span style="font-size: 0.7rem; color: #888; font-weight: bold; text-transform: uppercase;">Previsão p/ Mês</span>
-                    <h3 id="master-faturamento" style="margin: 5px 0 0; color: var(--success);">R$ 0</h3>
+                <div style="background: #f8f9fa; padding: 10px; border-radius: 15px; text-align: center; border: 1px solid #ddd;">
+                    <span style="font-size: 0.6rem; color: #888; font-weight: bold; text-transform: uppercase;">Previsão</span>
+                    <h3 id="master-faturamento" style="margin: 5px 0 0; color: var(--success); font-size: 1.1rem;">R$ 0</h3>
                 </div>
             </div>
 
-            <div id="lista-usuarios-admin" style="margin-bottom: 20px; max-height: 400px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; padding: 5px;">
-                </div>
+            <div id="lista-usuarios-admin" style="margin-bottom: 20px; max-height: 350px; overflow-y: auto; border: 1px solid #eee; border-radius: 10px; padding: 5px;"></div>
 
             <button onclick="fecharPainelDono()" class="btn-system" style="background: #333; color: white; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; border: none; cursor: pointer;">Fechar Painel Master</button>
         </div>
     </div>
 
-    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:25000; color:white; text-align:center; padding:40px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+    <div id="bloqueio-assinatura" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:#121212; z-index:25000; color:white; text-align:center; padding:20px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
         <h1 style="font-size: 3rem;">🤡</h1>
         <h2 style="color: var(--primary); font-weight: 900; margin-bottom: 10px;">ACESSO BLOQUEADO</h2>
-        <p id="mensagem-bloqueio" style="font-size: 1.1rem; line-height: 1.5; max-width: 300px; margin-bottom: 30px;">
+        <p id="mensagem-bloqueio" style="font-size: 1rem; line-height: 1.5; max-width: 280px; margin-bottom: 30px;">
             Sua mensalidade venceu! Para continuar organizando sua turma e evitar calotes, realize o pagamento.
         </p>
         
-        <div style="background: #222; padding: 20px; border-radius: 20px; border: 2px dashed var(--primary); width: 100%; max-width: 300px;">
+        <div style="background: #222; padding: 20px; border-radius: 20px; border: 2px dashed var(--primary); width: 100%; max-width: 280px;">
             <p style="font-size: 0.8rem; text-transform: uppercase; color: #aaa; margin-bottom: 5px;">Valor da Mensalidade</p>
             <h2 style="color: var(--success); margin-bottom: 15px;">R$ 79,90</h2>
             <p style="font-size: 0.9rem; margin-bottom: 5px;">Chave PIX (E-mail):</p>
-            <strong style="color: var(--primary); font-size: 1rem;">seuemail@aqui.com</strong>
+            <strong style="color: var(--primary); font-size: 0.9rem;">seuemail@aqui.com</strong>
         </div>
 
-        <p style="margin-top: 30px; font-size: 0.9rem; color: #888;">Após pagar, envie o comprovante para o suporte liberar seu acesso.</p>
-        
         <button onclick="fazerLogout()" class="btn-system" style="margin-top: 20px; background: transparent; border: 1px solid #444; color: #888; padding: 10px 20px; border-radius: 10px;">Sair da Conta</button>
     </div>
 
-    <div id="app-content" style="display: none;">
-        <header style="background: var(--bg-body); padding: 15px 0; box-shadow: var(--shadow-up); margin-bottom: 25px;">
-            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 850px; margin: 0 auto; width: 100%; padding: 0 20px;">
-                <h1 style="margin:0; font-size: 1.2rem; color: var(--primary); font-weight: 900;">BATE-CONTROLE 🤩</h1>
-                <button onclick="fazerLogout()" class="btn-acao-grande" style="font-size: 0.8rem !important; width: auto; padding: 0 15px !important;">Sair</button>
+    <div id="app-content" style="display: none; width: 100%;">
+        <header style="background: var(--bg-body); padding: 15px 0; box-shadow: var(--shadow-up); margin-bottom: 25px; width: 100%;">
+            <div style="display: flex; justify-content: space-between; align-items: center; max-width: 850px; margin: 0 auto; width: 100%; padding: 0 15px;">
+                <h1 style="margin:0; font-size: 1.1rem; color: var(--primary); font-weight: 900;">BATE-CONTROLE 🤩</h1>
+                <button onclick="fazerLogout()" class="btn-acao-grande" style="font-size: 0.7rem !important; width: auto; padding: 0 10px !important; height: 35px;">Sair</button>
             </div>
         </header>
 
-        <main>
+        <main style="width: 100%; padding: 10px;">
             <section id="resumo-financeiro">
                 <div class="card-resumo"><span>Componentes</span><h4 id="total-componentes">0</h4></div>
                 <div class="card-resumo"><span>Meta Final</span><h4 id="meta-total">R$ 0</h4></div>
@@ -87,46 +84,46 @@
             </section>
 
             <section class="glass-section">
-                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">📊 Custos Extras (Rateio)</h3>
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" id="descExtra" placeholder="Ex: Ônibus" style="flex: 2;">
-                    <input type="number" id="valorExtra" placeholder="R$" style="flex: 1;">
-                    <button onclick="adicionarCustoExtra()" class="btn-acao-grande" style="background: var(--primary); color: white;">+</button>
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem;">📊 Custos Extras</h3>
+                <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;">
+                    <input type="text" id="descExtra" placeholder="Ex: Ônibus" style="flex: 1; min-width: 150px; margin-bottom: 0;">
+                    <input type="number" id="valorExtra" placeholder="R$" style="width: 80px; margin-bottom: 0;">
+                    <button onclick="adicionarCustoExtra()" class="btn-acao-grande" style="background: var(--primary); color: white; flex-shrink: 0;">+</button>
                 </div>
                 <ul id="listaExtras" style="padding:0; margin:0; list-style: none;"></ul>
-                <div style="margin-top:15px; padding:15px; border-radius: 12px; background: var(--bg-body); box-shadow: var(--shadow-down); font-weight:bold; color:var(--primary); font-size: 0.9rem; text-align: center;">
+                <div style="margin-top:15px; padding:15px; border-radius: 12px; background: var(--bg-body); box-shadow: var(--shadow-down); font-weight:bold; color:var(--primary); font-size: 0.85rem; text-align: center;">
                     + R$ <span id="valorExtraPorPessoa">0,00</span> por pessoa
                 </div>
             </section>
 
             <section class="glass-section">
-                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">🛍️ Compras & Materiais (Delegados)</h3>
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem;">🛍️ Compras & Materiais</h3>
                 <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
-                    <span style="font-size: 0.8rem; color: #c53030; font-weight: bold; text-transform: uppercase;">Total Investido em Materiais</span>
-                    <h3 style="margin: 5px 0 0; color: var(--danger);">R$ <span id="total-gastos-manuais">0,00</span></h3>
+                    <span style="font-size: 0.7rem; color: #c53030; font-weight: bold; text-transform: uppercase;">Total Investido</span>
+                    <h3 style="margin: 5px 0 0; color: var(--danger); font-size: 1.2rem;">R$ <span id="total-gastos-manuais">0,00</span></h3>
                 </div>
-                <div style="display: grid; gap: 10px; margin-bottom: 15px;">
-                    <input type="text" id="gasto-item" placeholder="O que comprou? (Ex: Pano, Glitter)">
-                    <div style="display: flex; gap: 10px;">
-                        <input type="number" id="gasto-valor" placeholder="Valor (R$)" style="flex: 1;">
-                        <input type="text" id="gasto-delegado" placeholder="Quem comprou?" style="flex: 2;">
+                <div style="display: grid; gap: 8px; margin-bottom: 15px;">
+                    <input type="text" id="gasto-item" placeholder="O que comprou?" style="margin-bottom: 0;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="gasto-valor" placeholder="R$" style="width: 90px; margin-bottom: 0;">
+                        <input type="text" id="gasto-delegado" placeholder="Quem?" style="flex: 1; margin-bottom: 0;">
                     </div>
-                    <button onclick="adicionarGastoManual()" class="btn-acao-grande" style="background: var(--primary-dark); color: white; width: 100%;">REGISTRAR COMPRA 📝</button>
+                    <button onclick="adicionarGastoManual()" class="btn-acao-grande" style="background: var(--primary-dark); color: white; width: 100%; border-radius: 12px; height: 50px; font-size: 0.8rem !important;">REGISTRAR COMPRA 📝</button>
                 </div>
                 <div id="lista-gastos-manuais"></div>
             </section>
 
             <section class="glass-section">
-                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px;">👤 Adicionar Componente</h3>
-                <div style="display: grid; gap: 5px;">
-                    <input type="text" id="nome" placeholder="Nome Completo">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <input type="number" id="valorTotal" placeholder="Valor Fantasia (R$)">
-                        <input type="text" id="telefone" placeholder="WhatsApp">
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem;">👤 Adicionar Componente</h3>
+                <div style="display: grid; gap: 8px;">
+                    <input type="text" id="nome" placeholder="Nome Completo" style="margin-bottom: 0;">
+                    <div style="display: flex; gap: 8px;">
+                        <input type="number" id="valorTotal" placeholder="R$ Fantasia" style="flex: 1; margin-bottom: 0;">
+                        <input type="text" id="telefone" placeholder="WhatsApp" style="flex: 1; margin-bottom: 0;">
                     </div>
-                    <div style="background: var(--bg-body); padding: 12px; border-radius: 14px; box-shadow: var(--shadow-down); display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <span style="font-size: 0.8rem; color: var(--text-main); font-weight: bold;">Vencimento:</span>
-                        <input type="date" id="dataVencimento" style="border:none; background:transparent; padding:0; box-shadow: none; margin-bottom: 0;">
+                    <div style="background: var(--bg-body); padding: 10px; border-radius: 14px; box-shadow: var(--shadow-down); display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 0.7rem; color: var(--text-main); font-weight: bold;">Vencimento:</span>
+                        <input type="date" id="dataVencimento" style="border:none; background:transparent; padding:0; box-shadow: none; margin-bottom: 0; font-size: 0.9rem; flex: 1;">
                     </div>
                     <button id="btn-cadastrar" onclick="adicionarComponente()">Salvar no Banco</button>
                 </div>
@@ -134,14 +131,14 @@
 
             <div style="margin-bottom: 25px;">
                 <input type="text" id="buscaNome" placeholder="🔍 Buscar por nome..." onkeyup="atualizarTabela()">
-                <div style="display: flex; gap: 10px;">
-                    <button onclick="filtrar('todos')" class="btn-acao-grande" style="flex:1; font-size: 0.9rem !important;">Todos</button>
-                    <button onclick="filtrar('atrasado')" class="btn-acao-grande" style="flex:1; color: var(--danger); font-size: 0.9rem !important;">Atrasados</button>
-                    <button onclick="filtrar('em-dia')" class="btn-acao-grande" style="flex:1; color: var(--success); font-size: 0.9rem !important;">Em Dia</button>
+                <div style="display: flex; gap: 5px;">
+                    <button onclick="filtrar('todos')" class="btn-acao-grande" style="flex:1; font-size: 0.7rem !important; height: 40px;">Todos</button>
+                    <button onclick="filtrar('atrasado')" class="btn-acao-grande" style="flex:1; color: var(--danger); font-size: 0.7rem !important; height: 40px;">Atrasados</button>
+                    <button onclick="filtrar('em-dia')" class="btn-acao-grande" style="flex:1; color: var(--success); font-size: 0.7rem !important; height: 40px;">Em Dia</button>
                 </div>
             </div>
 
-            <button onclick="avisarVencimentosAmanha()" class="btn-avisar-vencimentos">
+            <button onclick="avisarVencimentosAmanha()" class="btn-avisar-vencimentos" style="font-size: 0.8rem; padding: 15px;">
                 📢 AVISAR VENCIMENTOS DE AMANHÃ
             </button>
 
@@ -160,9 +157,9 @@
                 </table>
             </div>
 
-            <div style="margin-top: 30px; display: grid; gap: 15px;">
-                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar-pdf" style="background: var(--primary-dark); font-weight: bold; color: white; border: none; padding: 15px; border-radius: 10px; cursor: pointer;">📄 Baixar Relatório PDF</button>
-                <button onclick="zerarTemporada()" id="btn-login-entrar-zerar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6; padding: 15px; border-radius: 10px; cursor: pointer;">🔄 Zerar Temporada (Limpar Tudo)</button>
+            <div style="margin-top: 30px; display: grid; gap: 10px; padding-bottom: 40px;">
+                <button onclick="gerarRelatorioPDF()" id="btn-login-entrar-pdf" style="background: var(--primary-dark); font-weight: bold; color: white; border: none; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 0.9rem;">📄 Baixar Relatório PDF</button>
+                <button onclick="zerarTemporada()" id="btn-login-entrar-zerar" style="background: #fff; color: var(--danger); box-shadow: var(--shadow-up); border: 1px solid #f9d6d6; padding: 18px; border-radius: 12px; cursor: pointer; font-size: 0.8rem;">🔄 Zerar Temporada</button>
             </div>
 
         </main>
