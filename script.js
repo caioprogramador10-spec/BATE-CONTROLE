@@ -12,7 +12,7 @@ const TABELA_USUARIOS = 'batecontroleusers';
 // ==========================================
 const DIAS_TRIAL = 15; 
 const VALOR_MENSALIDADE = 79.90; 
-const MEU_PIX = "(21) 98507-2328"; 
+const MEU_PIX = "caio.programador10@gmail.com"; // Coloque seu e-mail PIX aqui 
 const WHATSAPP_DONO = "5521985072328"; 
 
 // ==========================================
@@ -309,9 +309,15 @@ async function avisarVencimentosAmanha() {
     if(confirm(`Enviar mensagem para ${avisados.length} pessoas que vencem amanhã?`)) {
         avisados.forEach((c, index) => {
             setTimeout(() => {
-                const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${dia}/${mes}/${ano}).%0A%0A_Evite atrasos!_`;
-                window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
-            }, index * 1500); 
+                const saldoDevido = ((c.valor_total || 0) + rateio - (c.valor_pago || 0)).toFixed(2);
+                const msg = `Olá *${c.nome}*! 🤡%0A%0APassando para avisar que sua mensalidade vence *AMANHÃ* (${dia}/${mes}).%0A%0AValor pendente: *R$ ${saldoDevido}*%0A%0A_Evite atrasos!_`;
+                
+                // AJUSTE PARA MOBILE (Usando link temporário para burlar bloqueio)
+                const link = document.createElement('a');
+                link.href = `https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`;
+                link.target = '_blank';
+                link.click();
+            }, index * 3000); 
         });
     }
 }
@@ -382,7 +388,12 @@ async function registrarPagamento(id) {
 function cobrarWhatsApp(id, saldo) {
     const c = componentes.find(x => x.id == id);
     const msg = `Olá *${c.nome}*! 🤡%0A%0ASaldo Devedor: *R$ ${saldo.toFixed(2)}*%0A_Favor regularizar!_`;
-    window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`);
+    
+    // Ajuste mobile também para cobrança individual
+    const link = document.createElement('a');
+    link.href = `https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`;
+    link.target = '_blank';
+    link.click();
 }
 
 async function removerComponente(id) {
@@ -467,27 +478,11 @@ async function editarValorFantasia(id) {
     await atualizarTabela();
 }
 
-/* ==========================================
-   NOVA FUNÇÃO: EDITAR VALOR GLOBAL (Massa)
-   ========================================== */
 async function editarValorGlobal() {
     const novoValor = parseFloat(prompt("Digite o NOVO VALOR DA FANTASIA para TODOS os componentes:"));
-    
     if (isNaN(novoValor)) return;
-
-    if(!confirm(`⚠️ ATENÇÃO: Deseja realmente alterar o valor de TODOS para R$ ${novoValor.toFixed(2)}?`)) return;
-
-    const { error } = await supabaseInstance
-        .from('componentes')
-        .update({ valor_total: novoValor })
-        .eq('turma_id', usuarioLogado.user);
-
-    if (error) {
-        alert("Erro ao atualizar valores em massa!");
-    } else {
-        alert("Todos os componentes foram atualizados com sucesso! 🤡👊");
-        await atualizarTabela();
-    }
+    if(!confirm(`⚠️ ATENÇÃO: Alterar todos para R$ ${novoValor.toFixed(2)}?`)) return;
+    const { error } = await supabaseInstance.from('componentes').update({ valor_total: novoValor }).eq('turma_id', usuarioLogado.user);
+    if (error) alert("Erro!"); else { alert("Atualizado! 🤡👊"); await atualizarTabela(); }
 }
-
 window.onload = atualizarVisualizacao;
