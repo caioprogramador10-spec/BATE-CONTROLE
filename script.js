@@ -11,7 +11,7 @@ const TABELA_USUARIOS = 'batecontroleusers';
 // CONFIGURAÇÕES DE VENDA (SaaS)
 // ==========================================
 const DIAS_TRIAL = 15; 
-const VALOR_MENSALIDADE = 79.90; 
+const VALOR_MENSALIDADE = 39.90; 
 const MEU_PIX = "caio.programador10@gmail.com"; // Coloque seu e-mail PIX aqui 
 const WHATSAPP_DONO = "5521985072328"; 
 
