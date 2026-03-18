@@ -15,9 +15,10 @@ const VALOR_MENSALIDADE = 39.90;
 const MEU_PIX = "caio.programador10@gmail.com"; 
 const WHATSAPP_DONO = "5521985072328"; 
 
-const TELEGRAM_TOKEN = "7547012581:AAGy7l1oYnE-zP64TAn-2LzK-o66Tf2_V2k"; 
-const TELEGRAM_CHAT_ID = "6348821952"; 
+const TELEGRAM_TOKEN = "8646880823:AAG8F1oClLVjqrH4PggfqYeevpaaq2RxyeI"; 
+const TELEGRAM_CHAT_ID = "6924491541"; 
 
+// FUNÇÃO GLOBAL DE NOTIFICAÇÃO (USADA POR AMBOS OS ARQUIVOS)
 async function enviarNotificacaoTelegram(mensagem) {
     try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -47,6 +48,7 @@ async function checarWhatsAppPendente() {
                 usuarioLogado.whatsapp = numero;
                 localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
                 alert("WhatsApp atualizado! 🤡👊");
+                // NOTIFICAÇÃO: WHATSAPP ATUALIZADO
                 enviarNotificacaoTelegram(`📱 *ZAP ATUALIZADO*\n👤 Turma: ${usuarioLogado.user.toUpperCase()}\n✅ Número: ${numero}`);
             }
         }
@@ -136,7 +138,10 @@ async function executarAcaoPrincipal() {
             };
             const { error: insErr } = await supabaseInstance.from(TABELA_USUARIOS).insert([novo]);
             if (insErr) throw insErr;
-            enviarNotificacaoTelegram(`🎭 *NOVA TURMA!*\n👤 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}`);
+
+            // NOTIFICAÇÃO: NOVA TURMA CADASTRADA
+            enviarNotificacaoTelegram(`🎭 *NOVA TURMA CADASTRADA!*\n👑 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}\n📅 Expira em: ${expiraInicial.toLocaleDateString()}`);
+            
             alert(`Turma ${user.toUpperCase()} cadastrada! 15 dias grátis.`);
             alternarTelaLogin();
         } else {
@@ -200,13 +205,18 @@ async function renovarTurma(nomeTurma) {
     novaData.setDate(novaData.getDate() + 30);
     const { error } = await supabaseInstance.from(TABELA_USUARIOS).update({ data_expiracao: novaData.toISOString(), status: 'pago' }).eq('user', nomeTurma);
     if (!error) { 
-        enviarNotificacaoTelegram(`💰 *PAGO!*\n👑 Turma: ${nomeTurma.toUpperCase()}`);
+        // NOTIFICAÇÃO: TURMA RENOVADA (DINHEIRO NO BOLSO!)
+        enviarNotificacaoTelegram(`💰 *PAGAMENTO CONFIRMADO!*\n👑 Turma: ${nomeTurma.toUpperCase()}\n📅 Nova Expiração: ${novaData.toLocaleDateString()}`);
         alert("Renovado! 🤡👊"); renderizarUsuariosAdmin(); 
     }
 }
 
 async function deletarUsuarioAdmin(nome) {
-    if(confirm("Apagar permanentemente?")) { await supabaseInstance.from(TABELA_USUARIOS).delete().eq('user', nome); renderizarUsuariosAdmin(); }
+    if(confirm("Apagar permanentemente?")) { 
+        await supabaseInstance.from(TABELA_USUARIOS).delete().eq('user', nome); 
+        enviarNotificacaoTelegram(`🗑️ *TURMA DELETADA*\n👤 Nome: ${nome.toUpperCase()}`);
+        renderizarUsuariosAdmin(); 
+    }
 }
 
 function acessarPainelDono() { 
@@ -409,9 +419,6 @@ function alternarTelaLogin() {
     }
 }
 
-// ==========================================
-// FUNÇÕES DE REMOÇÃO (ADICIONADAS PARA O BOTÃO FUNCIONAR)
-// ==========================================
 async function removerComponente(id) {
     if(confirm("Deseja realmente remover este componente?")) {
         await supabaseInstance.from('componentes').delete().eq('id', id);
