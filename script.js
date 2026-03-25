@@ -18,7 +18,7 @@ const WHATSAPP_DONO = "5521985072328";
 const TELEGRAM_TOKEN = "8646880823:AAG8F1oClLVjqrH4PggfqYeevpaaq2RxyeI"; 
 const TELEGRAM_CHAT_ID = "6924491541"; 
 
-// FUNÇÃO GLOBAL DE NOTIFICAÇÃO (USADA POR AMBOS OS ARQUIVOS)
+// FUNÇÃO GLOBAL DE NOTIFICAÇÃO
 async function enviarNotificacaoTelegram(mensagem) {
     try {
         await fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`, {
@@ -48,7 +48,6 @@ async function checarWhatsAppPendente() {
                 usuarioLogado.whatsapp = numero;
                 localStorage.setItem('bateControleSessao', JSON.stringify(usuarioLogado));
                 alert("WhatsApp atualizado! 🤡👊");
-                // NOTIFICAÇÃO: WHATSAPP ATUALIZADO
                 enviarNotificacaoTelegram(`📱 *ZAP ATUALIZADO*\n👤 Turma: ${usuarioLogado.user.toUpperCase()}\n✅ Número: ${numero}`);
             }
         }
@@ -112,6 +111,10 @@ async function executarAcaoPrincipal() {
     const user = document.getElementById('usuario').value.trim().toLowerCase();
     const pass = document.getElementById('senha').value.trim();
     const whatsappLider = document.getElementById('whatsapp_lider') ? document.getElementById('whatsapp_lider').value.trim() : "";
+    
+    const rdbSim = document.querySelector('input[name="foi_indicado"][value="sim"]');
+    const idIndicador = document.getElementById('id_indicador') ? document.getElementById('id_indicador').value.trim() : "";
+    const valorIndicacao = (rdbSim && rdbSim.checked) ? (idIndicador || "Sim (Sem ID)") : "Nenhum";
 
     if (!user || !pass) return alert("Preencha tudo!");
     if (modoCadastro && !whatsappLider) return alert("Informe o WhatsApp do responsável!");
@@ -133,17 +136,37 @@ async function executarAcaoPrincipal() {
 
             const novo = { 
                 user: user, pass: pass, whatsapp: whatsappLider,
+                indicado_por: valorIndicacao,
                 criacao: new Date().toISOString(), 
                 data_expiracao: expiraInicial.toISOString(), status: "gratis" 
             };
             const { error: insErr } = await supabaseInstance.from(TABELA_USUARIOS).insert([novo]);
             if (insErr) throw insErr;
 
-            // NOTIFICAÇÃO: NOVA TURMA CADASTRADA
-            enviarNotificacaoTelegram(`🎭 *NOVA TURMA CADASTRADA!*\n👑 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}\n📅 Expira em: ${expiraInicial.toLocaleDateString()}`);
+            // --- LÓGICA DE METAS DE DESCONTO (5 = 50% | 10 = 100%) ---
+            let alertaMeta = "";
+            if (valorIndicacao !== "Nenhum" && valorIndicacao !== "Sim (Sem ID)") {
+                // Conta quantas turmas esse ID já indicou
+                const { count, error: countErr } = await supabaseInstance
+                    .from(TABELA_USUARIOS)
+                    .select('*', { count: 'exact', head: true })
+                    .eq('indicado_por', valorIndicacao);
+
+                if (!countErr) {
+                    if (count === 5) {
+                        alertaMeta = `\n\n🎯 *META DE 5 ATINGIDA!* \nO padrinho *${valorIndicacao.toUpperCase()}* ganhou *50% DE DESCONTO*! 💸`;
+                    } else if (count === 10) {
+                        alertaMeta = `\n\n🔥 *META DE 10 ATINGIDA!* \nO padrinho *${valorIndicacao.toUpperCase()}* ganhou *100% DE DESCONTO (GRÁTIS)*! 🏆`;
+                    } else {
+                        alertaMeta = `\n(Total do padrinho: ${count} indicações)`;
+                    }
+                }
+            }
+
+            enviarNotificacaoTelegram(`🎭 *NOVA TURMA CADASTRADA!*\n👑 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}\n🎁 Indicação: ${valorIndicacao}${alertaMeta}\n📅 Expira em: ${expiraInicial.toLocaleDateString()}`);
             
             alert(`Turma ${user.toUpperCase()} cadastrada! 15 dias grátis.`);
-            alternarTelaLogin();
+            location.reload(); 
         } else {
             let { data: valid } = await supabaseInstance.from(TABELA_USUARIOS).select('*').eq('user', user).eq('pass', pass).single();
             if (valid) {
@@ -156,7 +179,7 @@ async function executarAcaoPrincipal() {
 }
 
 // ==========================================
-// 2. PAINEL DO DONO (ADMIN)
+// 2. PAINEL DO DONO (ADMIN) - ATUALIZADO CAIO
 // ==========================================
 async function renderizarUsuariosAdmin() {
     let { data: usuarios } = await supabaseInstance.from(TABELA_USUARIOS).select('*');
@@ -171,20 +194,30 @@ async function renderizarUsuariosAdmin() {
             const hoje = new Date();
             const expira = u.data_expiracao ? new Date(u.data_expiracao) : new Date(new Date(u.criacao).getTime() + (DIAS_TRIAL * 24 * 60 * 60 * 1000));
             const expirado = hoje > expira;
+            
             if (!expirado && u.status === 'pago') lucroTotal += VALOR_MENSALIDADE;
 
             if (u.user.toLowerCase().includes(termo)) {
                 const corStatus = expirado ? 'var(--danger)' : (u.status === 'pago' ? 'var(--success)' : 'var(--primary)');
+                
+                // Visual Aprimorado para o seu controle visual total
                 lista.innerHTML += `
-                    <div class="card-resumo" style="margin-bottom:10px; border-left: 6px solid ${corStatus}; display: flex; justify-content: space-between; align-items: center; background:#f9f9f9; padding:10px;">
-                        <div>
-                            <p style="margin:0; font-size:0.9rem;"><strong>${u.user.toUpperCase()}</strong></p>
-                            <p style="font-size:0.7rem; color:#666;">Whats: ${u.whatsapp || '---'} | Expira: ${expira.toLocaleDateString('pt-BR')}</p>
-                        </div>
-                        <div style="display:flex; gap:5px;">
-                            <button onclick="falarComLider('${u.whatsapp}')" style="background:#25D366; border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">📱</button>
-                            <button onclick="renovarTurma('${u.user}')" style="background:var(--success); border:none; color:white; padding:5px 10px; border-radius:5px; cursor:pointer;">+30d</button>
-                            <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:none; border:none; cursor:pointer;">🗑️</button>
+                    <div class="card-resumo" style="margin-bottom:12px; border-left: 6px solid ${corStatus}; background:#fff; padding:15px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+                        <div style="display:flex; justify-content: space-between; align-items: flex-start; width:100%;">
+                            <div style="flex:1;">
+                                <p style="margin:0; font-size:1rem; color: #333;"><strong>${u.user.toUpperCase()}</strong></p>
+                                <p style="font-size:0.75rem; color:#25D366; font-weight:bold; margin: 4px 0;">📱 WhatsApp: ${u.whatsapp || 'Não informado'}</p>
+                                <p style="font-size:0.75rem; color:#666; margin: 2px 0;">🤝 Indicado por: <span style="color:var(--primary-dark); font-weight:bold;">${u.indicado_por || 'Direto'}</span></p>
+                                <p style="font-size:0.7rem; color:#888;">📅 Expira: ${expira.toLocaleDateString('pt-BR')} ${expirado ? '⚠️' : '✅'}</p>
+                            </div>
+                            <div style="display:flex; flex-direction: column; gap:8px;">
+                                <div style="display:flex; gap:5px;">
+                                    <button onclick="falarComLider('${u.whatsapp}')" style="background:#25D366; border:none; color:white; width:35px; height:35px; border-radius:8px; cursor:pointer; font-size:1rem;">📱</button>
+                                    <button onclick="renovarTurma('${u.user}')" style="background:var(--success); border:none; color:white; padding:0 10px; height:35px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:0.7rem;">+30d</button>
+                                    <button onclick="deletarUsuarioAdmin('${u.user}')" style="background:#f1f1f1; border:none; width:35px; height:35px; border-radius:8px; cursor:pointer; font-size:0.9rem;">🗑️</button>
+                                </div>
+                                <span style="font-size:0.6rem; text-align:center; font-weight:bold; color:${corStatus}">${u.status === 'pago' ? 'ASSINANTE' : (expirado ? 'BLOQUEADO' : 'TRIAL')}</span>
+                            </div>
                         </div>
                     </div>`;
             }
@@ -195,24 +228,25 @@ async function renderizarUsuariosAdmin() {
 }
 
 function falarComLider(numero) {
-    if(!numero) return alert("Sem WhatsApp!");
-    window.open(`https://api.whatsapp.com/send?phone=55${numero.replace(/\D/g, '')}&text=Olá! Aqui é o Caio do Bate-Controle. 🤡`, '_blank');
+    if(!numero) return alert("Sem WhatsApp cadastrado!");
+    const numLimpo = numero.replace(/\D/g, '');
+    window.open(`https://api.whatsapp.com/send?phone=55${numLimpo}&text=Olá! Aqui é o Caio do Bate-Controle. 🤡`, '_blank');
 }
 
 async function renovarTurma(nomeTurma) {
-    if(!confirm(`Renovar ${nomeTurma.toUpperCase()}?`)) return;
+    if(!confirm(`Confirmar pagamento e renovar ${nomeTurma.toUpperCase()} por 30 dias?`)) return;
     const novaData = new Date();
     novaData.setDate(novaData.getDate() + 30);
     const { error } = await supabaseInstance.from(TABELA_USUARIOS).update({ data_expiracao: novaData.toISOString(), status: 'pago' }).eq('user', nomeTurma);
     if (!error) { 
-        // NOTIFICAÇÃO: TURMA RENOVADA (DINHEIRO NO BOLSO!)
         enviarNotificacaoTelegram(`💰 *PAGAMENTO CONFIRMADO!*\n👑 Turma: ${nomeTurma.toUpperCase()}\n📅 Nova Expiração: ${novaData.toLocaleDateString()}`);
-        alert("Renovado! 🤡👊"); renderizarUsuariosAdmin(); 
+        alert("Renovado com sucesso! 🤡👊"); 
+        renderizarUsuariosAdmin(); 
     }
 }
 
 async function deletarUsuarioAdmin(nome) {
-    if(confirm("Apagar permanentemente?")) { 
+    if(confirm(`ATENÇÃO: Deseja apagar a turma ${nome.toUpperCase()} permanentemente?`)) { 
         await supabaseInstance.from(TABELA_USUARIOS).delete().eq('user', nome); 
         enviarNotificacaoTelegram(`🗑️ *TURMA DELETADA*\n👤 Nome: ${nome.toUpperCase()}`);
         renderizarUsuariosAdmin(); 
@@ -221,13 +255,13 @@ async function deletarUsuarioAdmin(nome) {
 
 function acessarPainelDono() { 
     document.getElementById('painel-dono').style.display = 'block';
-    if(!document.getElementById('busca-admin')){
-        document.getElementById('lista-usuarios-admin').insertAdjacentHTML('beforebegin', '<input type="text" id="busca-admin" placeholder="🔍 Filtrar turmas..." onkeyup="renderizarUsuariosAdmin()" style="margin-bottom:10px; width:100%; padding:8px;">');
-    }
     renderizarUsuariosAdmin(); 
 }
 
-function fecharPainelDono() { document.getElementById('painel-dono').style.display = 'none'; atualizarVisualizacao(); }
+function fecharPainelDono() { 
+    document.getElementById('painel-dono').style.display = 'none'; 
+    atualizarVisualizacao(); 
+}
 
 // ==========================================
 // 3. LÓGICA DO APP (FINANCEIRO INTEGRAL)
@@ -319,7 +353,6 @@ async function atualizarTabela() {
     });
 }
 
-// Funções Auxiliares (Integradas do segundo código)
 async function registrarPagamento(id) {
     const v = parseFloat(prompt("Valor do pagamento:"));
     if (isNaN(v)) return;
@@ -354,14 +387,13 @@ async function avisarVencimentosAmanha() {
 }
 
 async function zerarTemporada() {
-    if(!confirm("⚠️ Zerar tudo?")) return;
+    if(!confirm("⚠️ Deseja zerar os pagamentos e custos extras da temporada?")) return;
     await supabaseInstance.from('extras').delete().eq('turma_id', usuarioLogado.user);
     await supabaseInstance.from('componentes').update({ valor_pago: 0 }).eq('turma_id', usuarioLogado.user);
     await supabaseInstance.from('gastos_manuais').delete().eq('turma_id', usuarioLogado.user);
-    alert("Zerao! 🤡"); await atualizarTabela();
+    alert("Temporada zerada! 🤡"); await atualizarTabela();
 }
 
-// Relatórios e Gastos Manuais
 async function carregarGastosManuais() {
     if(!usuarioLogado) return;
     const { data: gastos } = await supabaseInstance.from('gastos_manuais').select('*').eq('turma_id', usuarioLogado.user);
@@ -380,7 +412,7 @@ async function adicionarGastoManual() {
 }
 
 async function removerGastoManual(id) {
-    if(confirm("Apagar?")) { await supabaseInstance.from('gastos_manuais').delete().eq('id', id); await carregarGastosManuais(); }
+    if(confirm("Apagar gasto?")) { await supabaseInstance.from('gastos_manuais').delete().eq('id', id); await carregarGastosManuais(); }
 }
 
 async function editarValorFantasia(id) {
@@ -391,7 +423,7 @@ async function editarValorFantasia(id) {
 
 async function editarValorGlobal() {
     const novo = parseFloat(prompt("Novo valor global da fantasia:"));
-    if (!isNaN(novo) && confirm("Alterar TODOS?")) { 
+    if (!isNaN(novo) && confirm("Alterar o valor de fantasia de TODOS os componentes?")) { 
         await supabaseInstance.from('componentes').update({ valor_total: novo }).eq('turma_id', usuarioLogado.user); 
         await atualizarTabela(); 
     }
@@ -411,11 +443,16 @@ function fazerLogout() { localStorage.removeItem('bateControleSessao'); window.l
 function alternarTelaLogin() { 
     modoCadastro = !modoCadastro; 
     document.getElementById('login-titulo').innerText = modoCadastro ? "NOVA TURMA 🎭" : "BATE-LOGIN 🤡"; 
+    
     const zapInput = document.getElementById('whatsapp_lider');
-    if (modoCadastro && !zapInput) {
-        document.getElementById('senha').insertAdjacentHTML('afterend', '<input type="text" id="whatsapp_lider" placeholder="WhatsApp do Líder (Ex: 21988887777)" style="margin-top:10px;">');
-    } else if (!modoCadastro && zapInput) {
-        zapInput.remove();
+    const secaoIndica = document.getElementById('secao-indicacao-cadastro');
+
+    if (modoCadastro) {
+        if (zapInput) zapInput.style.display = 'block';
+        if (secaoIndica) secaoIndica.style.display = 'block';
+    } else {
+        if (zapInput) zapInput.style.display = 'none';
+        if (secaoIndica) secaoIndica.style.display = 'none';
     }
 }
 
