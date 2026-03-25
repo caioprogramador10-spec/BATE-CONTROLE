@@ -67,7 +67,7 @@ body {
     -webkit-text-fill-color: transparent;
 }
 
-/* --- ESTILO DA SEÇÃO DE INDICAÇÃO (NOVO) --- */
+/* --- ESTILO DA SEÇÃO DE INDICAÇÃO (AJUSTADO PARA SIM/NÃO LADO A LADO) --- */
 #secao-indicacao-cadastro {
     background: var(--bg-body);
     padding: 15px;
@@ -86,7 +86,8 @@ body {
 
 .radio-group {
     display: flex;
-    gap: 20px;
+    justify-content: flex-start; /* Alinha os itens à esquerda */
+    gap: 30px; /* Dá um espaço maior entre o Não e o Sim */
     margin-bottom: 10px;
     font-weight: 600;
 }
@@ -94,8 +95,15 @@ body {
 .radio-group label {
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 8px; /* Espaço entre a bolinha e o texto */
     cursor: pointer;
+}
+
+/* Garante que a bolinha do rádio não fique esmagada no mobile */
+.radio-group input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin: 0;
 }
 
 /* --- CONTEÚDO PRINCIPAL --- */
