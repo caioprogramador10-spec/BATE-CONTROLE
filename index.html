@@ -27,6 +27,23 @@
                 <div id="login-form-fields" style="display: flex; flex-direction: column; gap: 10px;">
                     <input type="text" id="usuario" placeholder="Nome de usuário">
                     <input type="password" id="senha" placeholder="Sua senha">
+                    
+                    <input type="text" id="whatsapp_lider" placeholder="WhatsApp do Líder (Ex: 21988887777)" style="display: none;">
+
+                    <div id="secao-indicacao-cadastro" style="display: none; margin-top: 5px; text-align: left; background: #f9f9f9; padding: 10px; border-radius: 10px; border: 1px dashed #ccc;">
+                        <p style="font-size: 0.7rem; color: #666; margin-bottom: 8px; font-weight: bold;">FOI INDICADO POR OUTRA TURMA? 🤡</p>
+                        <div style="display: flex; gap: 15px; margin-bottom: 8px;">
+                            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="foi_indicado" value="nao" checked onclick="document.getElementById('wrapper-id-indicador').style.display='none'"> Não
+                            </label>
+                            <label style="font-size: 0.8rem; display: flex; align-items: center; gap: 5px; cursor: pointer;">
+                                <input type="radio" name="foi_indicado" value="sim" onclick="document.getElementById('wrapper-id-indicador').style.display='block'"> Sim
+                            </label>
+                        </div>
+                        <div id="wrapper-id-indicador" style="display: none;">
+                            <input type="text" id="id_indicador" placeholder="ID da Turma que indicou" style="margin-bottom: 0; border: 2px solid var(--primary);">
+                        </div>
+                    </div>
                 </div>
                 
                 <button id="btn-login-entrar" onclick="executarAcaoPrincipal()" style="margin-top: 10px;">Entrar</button>
@@ -187,5 +204,6 @@
     </div>
 
     <script src="script.js"></script>
-    <script src="pagamentos.js"></script> </body>
+    <script src="pagamentos.js"></script> 
+</body>
 </html>
