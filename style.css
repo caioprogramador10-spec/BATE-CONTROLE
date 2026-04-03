@@ -10,13 +10,24 @@
 }
 
 /* ==========================================
-   AJUSTE DE ROLAGEM (SCROLL) - CORRIGIDO PARA CELULAR
+   FORÇAR ROLAGEM NO CELULAR - ACRESCENTADO
    ========================================== */
-html, body { 
-    width: 100%; 
-    min-height: 100vh; /* Permite que o corpo cresça */
-    overflow-x: hidden; 
-    overflow-y: auto;   /* Força a rolagem vertical */
+html {
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+body { 
+    height: auto !important;
+    min-height: 100vh;
+    background-color: var(--bg-body); 
+    color: var(--text-main);
+    line-height: 1.4;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto !important; /* Libera o scroll no body */
+    position: relative;
 }
 
 #login-container {
@@ -25,10 +36,11 @@ html, body {
     background-color: var(--bg-body);
     display: flex;
     justify-content: center;
-    align-items: center;
-    padding: 50px 15px; /* Espaço para não cortar o botão no final */
-    position: relative;  /* MUDADO DE FIXED PARA RELATIVE PARA LIBERAR O SCROLL */
+    align-items: flex-start; /* Alinha pelo topo para o scroll fazer sentido */
+    padding: 60px 15px;      /* Espaço generoso no topo e fundo */
+    position: relative;      /* IMPORTANTE: Sem isso o scroll trava no mobile */
     z-index: 10000;
+    overflow-y: visible;     /* Garante que o conteúdo saia do container */
 }
 
 /* ==========================================
@@ -59,21 +71,13 @@ html, body {
     -webkit-tap-highlight-color: transparent;
 }
 
-body { 
-    background-color: var(--bg-body); 
-    color: var(--text-main);
-    line-height: 1.4;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 .login-box {
     background: var(--bg-body); 
     padding: 35px 25px; border-radius: var(--radius-lg);
     width: 100%; max-width: 360px; text-align: center; 
     box-shadow: var(--shadow-up);
     border: 1px solid rgba(255,255,255,0.5);
+    margin: auto; /* Mantém centralizado se sobrar espaço */
 }
 
 .login-box h2 { 
