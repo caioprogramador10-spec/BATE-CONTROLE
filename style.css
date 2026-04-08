@@ -35,7 +35,7 @@ body {
     min-height: 100vh; 
     background-color: var(--bg-body);
     display: flex;
-    flex-direction: column; /* Ajustado para o rodapé ficar embaixo */
+    flex-direction: column; 
     justify-content: center;
     align-items: center;
     padding: 60px 15px;
@@ -216,30 +216,7 @@ button:active, .btn-acao-grande:active { transform: translateY(4px) scale(0.96);
 }
 
 /* ==========================================
-   RODAPÉ DE CRÉDITOS - NOVO
-   ========================================== */
-.footer-creditos {
-    width: 100%;
-    padding: 20px;
-    text-align: center;
-    margin-top: 20px;
-}
-
-.footer-creditos p {
-    font-size: 0.75rem;
-    color: #88929b;
-    font-weight: 500;
-    letter-spacing: 0.5px;
-}
-
-.footer-creditos strong {
-    color: var(--primary-dark);
-    font-weight: 800;
-    text-transform: uppercase;
-}
-
-/* ==========================================
-   RODAPÉ DE CRÉDITOS - DESIGN ELITE
+   RODAPÉ DE CRÉDITOS - MANTIDO
    ========================================== */
 .footer-creditos {
     width: 100%;
@@ -252,13 +229,41 @@ button:active, .btn-acao-grande:active { transform: translateY(4px) scale(0.96);
 .footer-creditos p {
     font-family: 'Inter', sans-serif;
     font-size: 0.8rem;
-    color: #7f8c8d; /* Cinza suave */
+    color: #7f8c8d;
     margin: 0;
     letter-spacing: 0.5px;
 }
 
 .footer-creditos strong {
-    color: #2d3436; /* Cor escura para destacar seu nome */
+    color: #2d3436;
     font-weight: 800;
     text-transform: uppercase;
+}
+
+/* ==========================================
+   ADICIONADO: ESTILO DO BALANÇO (INTEGRAÇÃO)
+   ========================================== */
+.card-balanco-final {
+    grid-column: span 2;
+    background: var(--bg-body);
+    padding: 22px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-up);
+    text-align: center;
+    margin-top: 10px;
+    border: 2px solid rgba(255,255,255,0.5);
+}
+
+#valor-balanco {
+    font-size: 2.2rem;
+    font-weight: 900;
+    display: block;
+}
+
+#status-financeiro {
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    border-radius: 50px;
+    background: var(--shadow-down);
 }
