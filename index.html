@@ -15,8 +15,8 @@
     <a href="https://api.whatsapp.com/send?phone=5521985072328&text=Olá! Preciso de suporte com o Bate Controle." 
        target="_blank" 
        style="position: fixed !important; bottom: 20px !important; right: 20px !important; background-color: #25d366 !important; color: white !important; text-decoration: none !important; padding: 12px 20px !important; border-radius: 50px !important; display: flex !important; align-items: center !important; gap: 8px !important; font-weight: bold !important; box-shadow: 0 4px 15px rgba(0,0,0,0.5) !important; z-index: 999999 !important; font-family: sans-serif !important; font-size: 14px !important; visibility: visible !important; opacity: 1 !important;">
-       <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 25px !important; height: 25px !important; display: block !important;" alt="Zap">
-       <span>Suporte</span>
+        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" style="width: 25px !important; height: 25px !important; display: block !important;" alt="Zap">
+        <span>Suporte</span>
     </a>
 
     <section id="login-container">
@@ -123,6 +123,12 @@
                 <div class="card-resumo"><span>Meta Final</span><h4 id="meta-total">R$ 0</h4></div>
                 <div class="card-resumo" style="border-top-color: var(--success);"><span>Total Pago</span><h4 id="total-pago" style="color: var(--success);">R$ 0</h4></div>
                 <div class="card-resumo" style="border-top-color: var(--danger);"><span>Restante</span><h4 id="total-devedor" style="color: var(--danger);">R$ 0</h4></div>
+                
+                <div class="card-resumo" id="card-balanco-real" style="grid-column: span 2; border-top: 5px solid #2d3436; background: #fff;">
+                    <span style="font-size: 0.7rem; color: #666; font-weight: bold; text-transform: uppercase;">Balanço em Caixa (Lucro/Prejuízo)</span>
+                    <h4 id="valor-balanco" style="font-size: 1.5rem; margin: 5px 0;">R$ 0,00</h4>
+                    <div id="status-financeiro" style="font-size: 0.75rem; font-weight: 800; padding: 4px; border-radius: 5px;"></div>
+                </div>
             </section>
 
             <section class="glass-section">
