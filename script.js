@@ -143,10 +143,8 @@ async function executarAcaoPrincipal() {
             const { error: insErr } = await supabaseInstance.from(TABELA_USUARIOS).insert([novo]);
             if (insErr) throw insErr;
 
-            // --- LÓGICA DE METAS DE DESCONTO (5 = 50% | 10 = 100%) ---
             let alertaMeta = "";
             if (valorIndicacao !== "Nenhum" && valorIndicacao !== "Sim (Sem ID)") {
-                // Conta quantas turmas esse ID já indicou
                 const { count, error: countErr } = await supabaseInstance
                     .from(TABELA_USUARIOS)
                     .select('*', { count: 'exact', head: true })
@@ -163,7 +161,7 @@ async function executarAcaoPrincipal() {
                 }
             }
 
-            enviarNotificacaoTelegram(`🎭 *NOVA TURMA CADASTRADA!*\n👑 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}\n🎁 Indicação: ${valorIndicacao}${alertaMeta}\n📅 Expira em: ${expiraInicial.toLocaleDateString()}`);
+            enviarNotificacaoTelegram(`*NOVA TURMA CADASTRADA!*\n👑 Turma: ${user.toUpperCase()}\n📱 Whats: ${whatsappLider}\n🎁 Indicação: ${valorIndicacao}${alertaMeta}\n📅 Expira em: ${expiraInicial.toLocaleDateString()}`);
             
             alert(`Turma ${user.toUpperCase()} cadastrada! 15 dias grátis.`);
             location.reload(); 
@@ -200,7 +198,6 @@ async function renderizarUsuariosAdmin() {
             if (u.user.toLowerCase().includes(termo)) {
                 const corStatus = expirado ? 'var(--danger)' : (u.status === 'pago' ? 'var(--success)' : 'var(--primary)');
                 
-                // Visual Aprimorado para o seu controle visual total
                 lista.innerHTML += `
                     <div class="card-resumo" style="margin-bottom:12px; border-left: 6px solid ${corStatus}; background:#fff; padding:15px; border-radius:12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
                         <div style="display:flex; justify-content: space-between; align-items: flex-start; width:100%;">
@@ -310,7 +307,37 @@ function atualizarResumo() {
             <span style="font-weight:bold;">✅ ${e.descricao}: R$ ${e.valor.toFixed(2)}</span>
             <button onclick="removerExtra('${e.id}')" style="background:none; border:none; color:var(--danger); cursor:pointer;">❌</button>
         </li>`).join('');
+    
+    atualizarBalancoGeral();
+    
     return rateio;
+}
+
+// CORREÇÃO: Aplicando a mesma lógica de tratamento numérico para o Balanço
+function atualizarBalancoGeral() {
+    // Pegamos os valores brutos da memória em vez do texto formatado com R$ para evitar erros de ponto/vírgula
+    let pago = 0;
+    componentes.forEach(c => { pago += (c.valor_pago || 0); });
+    
+    const gastosMateriais = parseFloat(document.getElementById('total-gastos-manuais').innerText) || 0;
+    
+    const saldoFinal = pago - gastosMateriais;
+
+    const txtBalanco = document.getElementById('valor-balanco');
+    const divStatus = document.getElementById('status-financeiro');
+
+    if (txtBalanco && divStatus) {
+        txtBalanco.innerText = saldoFinal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        if (saldoFinal < 0) {
+            txtBalanco.style.color = "#e53e3e";
+            divStatus.innerText = "🚨 PREJUÍZO: Gastos maiores que a entrada!";
+            divStatus.style.color = "#c53030";
+        } else {
+            txtBalanco.style.color = "#38a169";
+            divStatus.innerText = "💰 LUCRO: O caixa está positivo.";
+            divStatus.style.color = "#2f855a";
+        }
+    }
 }
 
 async function atualizarTabela() {
@@ -365,7 +392,7 @@ async function registrarPagamento(id) {
 
 function cobrarWhatsApp(id, saldo) {
     const c = componentes.find(x => x.id == id);
-    const msg = `Olá *${c.nome}*! 🤡%0ASaldo Devedor: *R$ ${saldo.toFixed(2)}*`;
+    const msg = `Olá *${c.nome}*! 🤡%0AVence AMANHÃ! Valor: *R$ ${saldo.toFixed(2)}*`;
     window.open(`https://api.whatsapp.com/send?phone=55${c.telefone}&text=${msg}`, '_blank');
 }
 
@@ -401,6 +428,8 @@ async function carregarGastosManuais() {
     if (!lista) return;
     document.getElementById('total-gastos-manuais').innerText = (gastos || []).reduce((acc, g) => acc + (g.valor || 0), 0).toFixed(2);
     lista.innerHTML = (gastos || []).map(g => `<div class="card-resumo" style="margin-bottom:8px; border-left:4px solid var(--primary-dark); padding:10px; background: #fff;"><strong>🛍️ ${g.item.toUpperCase()}</strong><br>R$ ${g.valor.toFixed(2)} - Resp: ${g.responsavel} <button onclick="removerGastoManual('${g.id}')" style="float:right; border:none; background:none; color:var(--danger);">🗑️</button></div>`).join('');
+    
+    atualizarBalancoGeral();
 }
 
 async function adicionarGastoManual() {
@@ -430,11 +459,68 @@ async function editarValorGlobal() {
 }
 
 async function gerarRelatorioPDF() {
-    const { jsPDF } = window.jspdf; const doc = new jsPDF(); const rateio = atualizarResumo();
-    doc.text(`Financeiro: ${usuarioLogado.user}`, 14, 20);
-    const body = componentes.map(c => [c.nome, (c.valor_total + rateio).toFixed(2), c.valor_pago.toFixed(2), (c.valor_total + rateio - c.valor_pago).toFixed(2), c.vencimento.split('-').reverse().join('/')]);
-    doc.autoTable({ startY: 25, head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], body: body });
-    doc.save(`relatorio_${usuarioLogado.user}.pdf`);
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const rateio = atualizarResumo();
+    const dataAtual = new Date().toLocaleDateString('pt-BR');
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 107, 0); 
+    doc.text(`BATE-CONTROLE: ${usuarioLogado.user.toUpperCase()}`, 105, 20, { align: "center" });
+
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Relatório Geral de Gestão | Data: ${dataAtual}`, 105, 28, { align: "center" });
+
+    doc.autoTable({
+        startY: 35,
+        head: [['INDICADOR', 'VALOR']],
+        body: [
+            ['Qtd. Componentes', document.getElementById('total-componentes').innerText],
+            ['Meta Arrecadação', document.getElementById('meta-total').innerText],
+            ['Total Recebido', document.getElementById('total-pago').innerText],
+            ['Total Gasto (Materiais)', "R$ " + document.getElementById('total-gastos-manuais').innerText],
+            ['BALANÇO ATUAL (CAIXA)', document.getElementById('valor-balanco').innerText]
+        ],
+        theme: 'striped',
+        headStyles: { fillColor: [45, 52, 54] }
+    });
+
+    let yPos = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(14);
+    doc.setTextColor(0);
+    doc.text("🛍️ Compras & Materiais", 14, yPos);
+
+    const { data: gastosBD } = await supabaseInstance.from('gastos_manuais').select('*').eq('turma_id', usuarioLogado.user);
+    const corpoGastos = (gastosBD || []).map(g => [g.item.toUpperCase(), `R$ ${g.valor.toFixed(2)}`, g.responsavel]);
+
+    doc.autoTable({
+        startY: yPos + 5,
+        head: [['Item', 'Valor', 'Responsável']],
+        body: corpoGastos.length > 0 ? corpoGastos : [['Nenhum gasto registrado', '-', '-']],
+    });
+
+    yPos = doc.lastAutoTable.finalY + 15;
+    if (yPos > 250) { doc.addPage(); yPos = 20; }
+    doc.text("👤 Lista de Pagamentos", 14, yPos);
+
+    const bodyComp = componentes.map(c => [
+        c.nome, 
+        (c.valor_total + rateio).toFixed(2), 
+        c.valor_pago.toFixed(2), 
+        (c.valor_total + rateio - c.valor_pago).toFixed(2), 
+        c.vencimento.split('-').reverse().join('/')
+    ]);
+
+    doc.autoTable({ 
+        startY: yPos + 5, 
+        head: [['Nome', 'Total', 'Pago', 'Dívida', 'Venc.']], 
+        body: bodyComp,
+        headStyles: { fillColor: [255, 107, 0] }
+    });
+
+    doc.save(`Relatorio_BateControle_${usuarioLogado.user}.pdf`);
 }
 
 function filtrar(t) { filtroAtual = t; atualizarTabela(); }
