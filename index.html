@@ -120,7 +120,7 @@
         <main style="width: 100%; padding: 10px;">
             <section id="resumo-financeiro">
                 <div class="card-resumo"><span>Componentes</span><h4 id="total-componentes">0</h4></div>
-                <div class="card-resumo"><span>Meta Final</span><h4 id="meta-total">R$ 0</h4></div>
+                <div class="card-resumo"><span>Projeção de Caixa</span><h4 id="meta-total">R$ 0</h4></div>
                 <div class="card-resumo" style="border-top-color: var(--success);"><span>Total Pago</span><h4 id="total-pago" style="color: var(--success);">R$ 0</h4></div>
                 <div class="card-resumo" style="border-top-color: var(--danger);"><span>Restante</span><h4 id="total-devedor" style="color: var(--danger);">R$ 0</h4></div>
                 
@@ -145,9 +145,9 @@
             </section>
 
             <section class="glass-section">
-                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem;">🛍️ Compras & Materiais</h3>
+                <h3 style="color: var(--primary-dark); font-weight: 800; margin-bottom: 15px; font-size: 1.1rem;">💸Despesa</h3>
                 <div style="background: #fff5f5; border: 1px solid #feb2b2; padding: 10px; border-radius: 10px; margin-bottom: 15px; text-align: center;">
-                    <span style="font-size: 0.7rem; color: #c53030; font-weight: bold; text-transform: uppercase;">Total Investido</span>
+                    <span style="font-size: 0.7rem; color: #c53030; font-weight: bold; text-transform: uppercase;">Total De Despesa</span>
                     <h3 style="margin: 5px 0 0; color: var(--danger); font-size: 1.2rem;">R$ <span id="total-gastos-manuais">0,00</span></h3>
                 </div>
                 <div style="display: grid; gap: 8px; margin-bottom: 15px;">
@@ -156,7 +156,7 @@
                         <input type="number" id="gasto-valor" placeholder="R$" style="width: 90px; margin-bottom: 0;">
                         <input type="text" id="gasto-delegado" placeholder="Quem?" style="flex: 1; margin-bottom: 0;">
                     </div>
-                    <button onclick="adicionarGastoManual()" class="btn-acao-grande" style="background: var(--primary-dark); color: white; width: 100%; border-radius: 12px; height: 50px; font-size: 0.8rem !important;">REGISTRAR COMPRA 📝</button>
+                    <button onclick="adicionarGastoManual()" class="btn-acao-grande" style="background: var(--primary-dark); color: white; width: 100%; border-radius: 12px; height: 50px; font-size: 0.8rem !important;">REGISTRAR DESPESA 📝</button>
                 </div>
                 <div id="lista-gastos-manuais"></div>
             </section>
